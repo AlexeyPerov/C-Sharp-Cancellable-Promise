@@ -289,7 +289,8 @@ namespace RSG.Tests
                         Assert.Equal(chainedResult2, items[1]);
 
                         ++completed;
-                    });
+                    })
+                    .Done();
 
                 Assert.Equal(0, completed);
 
@@ -430,6 +431,8 @@ namespace RSG.Tests
                     Assert.Equal(1, v.Item1);
                     Assert.Equal(true, v.Item2);
                 });
+                
+                all.Done();
 
                 promise1.Resolve(1);
                 promise2.Resolve(true);
@@ -459,6 +462,8 @@ namespace RSG.Tests
                     Assert.Equal(true, v.Item2);
                     Assert.Equal(3.0f, v.Item3);
                 });
+                
+                all.Done();
 
                 promise1.Resolve(1);
                 promise2.Resolve(true);

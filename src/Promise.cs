@@ -149,7 +149,7 @@ namespace RSG
         /// Finally callbacks will always be called, even if any preceding promise is rejected, or encounters an error.
         /// The returned promise will be resolved or rejected, as per the preceding promise.
         /// </summary> 
-        IPromise<PromisedT> Finally(Action onComplete);
+        void Finally(Action onComplete);
 
         /// <summary>
         /// Add a callback that chains a non-value promise.
@@ -1130,18 +1130,19 @@ namespace RSG
             return promise;
         }
 
-        public IPromise<PromisedT> Finally(Action onComplete)
+        public void Finally(Action onComplete)
         {
             if (CurState == PromiseState.Resolved)
             {
                 try
                 {
                     onComplete();
-                    return this;
+                    return;
                 }
                 catch (Exception ex)
                 {
-                    return Rejected(ex);
+                    Rejected(ex);
+                    return;
                 }
             }
 
@@ -1158,7 +1159,7 @@ namespace RSG
                 }
             });
 
-            return promise.Then(v =>
+            promise.Then(v =>
             {
                 onComplete();
                 return v;

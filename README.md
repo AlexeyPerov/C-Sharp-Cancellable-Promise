@@ -1,41 +1,10 @@
-# C-Sharp-Promise [![Build Status](https://travis-ci.org/Real-Serious-Games/C-Sharp-Promise.svg)](https://travis-ci.org/Real-Serious-Games/C-Sharp-Promise) [![NuGet](https://img.shields.io/nuget/v/RSG.Promise.svg)](https://www.nuget.org/packages/RSG.Promise/) #
+# C-Sharp-Cancellable-Promise ![unity](https://img.shields.io/badge/Unity-100000?style=for-the-badge&logo=unity&logoColor=white)                             
 
-<a href="https://promisesaplus.com/">
-    <img src="https://promisesaplus.com/assets/logo-small.png" alt="Promises/A+ logo"
-         title="Promises/A+ 1.0 compliant" align="right" />
-</a>
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 
-Promises library for C# for management of asynchronous operations.
-
-Inspired by JavaScript promises, but slightly different.
-
-Used by [Real Serious Games](https://github.com/Real-Serious-Games/C-Sharp-Promise) for building serious games and simulations on Unity3d.
-
-If you are interested in using promises for game development and Unity please see [this article](http://www.what-could-possibly-go-wrong.com/promises-for-game-development/).
-
-## Recent Updates
-
-- v3.0 (15 Feburary 2018)
-    - *Finally* has been modified to work in a way consistent to [Promise.prototype.finally()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/finally) in JavaScript.
-    - Added support for reporting progress in a promise.
-    - Signed assembly with a strong name.
-    - Errors throw custom exception types rather than generic ones.
-    - Modified some overloads of *Then* that didn't make sense.
-- v2.0 (4 December 2017)
-    - *Then* functions chained after a *Catch* are now run after the exception is handled rather than being terminated
-    - *Catch* can return a value which will be passed into the next *Then*
-    - The *onResolved* callback of *Then* can now also return a value which is passed to the next promise in the same way
-    - Added *elapsedUpdates* property to the TimeData struct used by PromiseTimer
-- v1.3 (28 October 2017)
-    - Added Cancel method to PromiseTimer
-    - Implemented an overload of Promise.All that works on Tuples of multiple types
-    - Implemented Finally method
-    - Removed dependency on RSG.Toolkit
-- v1.2 (8 March 2015)
-    - *Transform* function has been renamed to *Then* (another overload of *Then*).
-
-## Projects using this library
-- **[RestClient for Unity 🤘](https://github.com/proyecto26/RestClient)**
+That is a fork of [RSG.Promise](https://github.com/Real-Serious-Games/C-Sharp-Promise) 
+with an addition of promises cancellation. 
 
 ## Contents
 

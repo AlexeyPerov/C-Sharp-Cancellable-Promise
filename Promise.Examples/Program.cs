@@ -10,7 +10,7 @@ namespace Promise.Examples
 
             while (running)
             {
-                Console.WriteLine("Input an example id [1..5] to run or type 'q' to quit");
+                Console.WriteLine("Input an example id [1..6] to run or type 'q' to quit");
 
                 var line = Console.ReadLine();
 
@@ -37,6 +37,9 @@ namespace Promise.Examples
                             break;
                         case "5":
                             Example5.Run();
+                            break;
+                        case "6":
+                            Example6.Run();
                             break;
                     }
                 }

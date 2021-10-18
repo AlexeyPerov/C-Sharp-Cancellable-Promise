@@ -28,7 +28,7 @@ namespace RSG
                 {
                     if (!alreadyRejected)
                     {
-                        promise.Reject(e);
+                        promise.RejectSilent(e);
                     }
 
                     alreadyRejected = true;
@@ -49,7 +49,7 @@ namespace RSG
                 {
                     if (!alreadyRejected)
                     {
-                        promise.Reject(e);
+                        promise.RejectSilent(e);
                     }
 
                     alreadyRejected = true;

@@ -17,7 +17,7 @@ namespace Promise.Examples
             Download("http://www.bugglebogglebazzooo.com")   // Schedule async operation, this time the URL is bad!
                 .Catch(exception => 
                 {
-                    Console.WriteLine("Async operation errorred.");
+                    Console.WriteLine("Async operation errored.");
                     Console.WriteLine(exception);
                     running = false;
                 });

@@ -167,7 +167,7 @@ namespace RSG
                 return false;
             }
 
-            node.Value.pendingPromise.Reject(new PromiseCancelledException("Promise was cancelled by user."));
+            node.Value.pendingPromise.RejectSilent(new PromiseCancelledException("Promise was cancelled by user."));
             waiting.Remove(node);
 
             return true;

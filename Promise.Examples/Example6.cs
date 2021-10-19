@@ -101,7 +101,7 @@ namespace Promise.Examples
                 Console.WriteLine("TREE: " + promise.GetTreeDescription());
             });
             
-            promise.CancelSelf();
+            promise.CancelSelfAndAllChildren();
         }
 
         private static void WaitFor(float seconds, Action callback)

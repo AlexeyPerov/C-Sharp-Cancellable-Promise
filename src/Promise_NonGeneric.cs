@@ -720,7 +720,7 @@ namespace RSG
             }
         }
 
-        public void CancelSelf()
+        void ICancelable.CancelSelf()
         {
             if (CurState != PromiseState.Pending)
             {

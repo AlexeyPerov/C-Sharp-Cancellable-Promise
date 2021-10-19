@@ -1156,42 +1156,6 @@ namespace RSG.Tests
             Assert.Equal(0, errorCallback);
         }
 
-        /*todo:
-         * Also want a test that exception thrown during Then triggers the error handler.
-         * How do Javascript promises work in this regard?
-        [Fact]
-        public void exception_during_Done_onResolved_triggers_error_hander()
-        {
-            var promise = new Promise<int>();
-            var callback = 0;
-            var errorCallback = 0;
-            var expectedValue = 5;
-            var expectedException = new Exception();
-
-            promise.Done(
-                value =>
-                {
-                    Assert.Equal(expectedValue, value);
-
-                    ++callback;
-
-                    throw expectedException;
-                },
-                ex =>
-                {
-                    Assert.Equal(expectedException, ex);
-
-                    ++errorCallback;
-                }
-            );
-
-            promise.Resolve(expectedValue);
-
-            Assert.Equal(1, callback);
-            Assert.Equal(1, errorCallback);
-        }
-         * */
-
         [Fact]
         public void exception_during_Then_onResolved_triggers_error_hander()
         {
@@ -1226,7 +1190,6 @@ namespace RSG.Tests
 
             Assert.Equal(promise1.Id + 1, promise2.Id);
         }
-
 
         [Fact]
         public void finally_is_called_after_resolve()

@@ -12,7 +12,7 @@ namespace RSG
     /// Implements a non-generic C# promise, this is a promise that simply resolves without delivering a value.
     /// https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise
     /// </summary>
-    public interface IPromise : ICancelable
+    public interface IPromise : ICancellablePromise
     {
         /// <summary>
         /// ID of the promise, useful for debugging.
@@ -388,12 +388,12 @@ namespace RSG
         /// <summary>
         /// A promise parent in chain.
         /// </summary>
-        public ICancelable Parent { get; private set; }
+        public ICancellablePromise Parent { get; private set; }
         
         /// <summary>
         /// Promise children in chain.
         /// </summary>
-        public HashSet<ICancelable> Children { get; } = new HashSet<ICancelable>();
+        public HashSet<ICancellablePromise> Children { get; } = new HashSet<ICancellablePromise>();
         
         /// <summary>
         /// Loggable name.
@@ -439,7 +439,7 @@ namespace RSG
             id = NextId();
         }
         
-        public void AttachParent(ICancelable parent)
+        public void AttachParent(ICancellablePromise parent)
         {
             if (parent.Parent == this)
             {
@@ -448,7 +448,7 @@ namespace RSG
                 return;
             }
 
-            if (Parent != null)
+            if (Parent != null && Parent != parent)
             {
                 EventsReceiver.OnWarningMinor($"Overwriting existing parent {GetName()}");
             }
@@ -457,7 +457,7 @@ namespace RSG
             parent.AttachChild(this);
         }
 
-        public void AttachChild(ICancelable child)
+        public void AttachChild(ICancellablePromise child)
         {
             Children.Add(child);
         }
@@ -1228,7 +1228,7 @@ namespace RSG
             promisesArray.Each((promise, index) =>
             {
                 promise.AttachParent(resultPromise);
-                promise.OnCancel(resultPromise.Cancel);
+                resultPromise.OnCancel(promise.Cancel);
                 
                 promise
                     .Progress(v =>

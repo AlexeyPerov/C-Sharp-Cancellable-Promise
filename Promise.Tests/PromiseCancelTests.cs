@@ -188,5 +188,129 @@ namespace RSG.Tests
             Assert.Equal(true, cancel1Called);
             Assert.Equal(true, cancel2Called);
         }
+
+        [Fact]
+        public void can_cancel_promise_all()
+        {
+            var promise1 = new Promise();
+            var promise2 = new Promise();
+
+            var then1Called = false;
+            var then2Called = false;
+            var then3Called = false;
+            var then4Called = false;
+            
+            var cancel1Called = false;
+            var cancel2Called = false;
+
+            promise1.Then(() =>
+                {
+                    then1Called = true;
+                })
+                .Then(() =>
+                {
+                    then2Called = true;
+                }).OnCancel(() =>
+            {
+                cancel1Called = true;
+            });
+
+            promise2.Then(() =>
+                {
+                    then3Called = true;
+                })
+                .Then(() =>
+                {
+                    then4Called = true;
+                })
+                .OnCancel(() =>
+                {
+                    cancel2Called = true;
+                });
+
+            var promiseAll = Promise.All(promise1, promise2);
+            promiseAll.Cancel();
+            
+            var resolved = promise1.TryResolve();
+            
+            Assert.Equal(false, resolved);
+            
+            Assert.Equal(false, promise1.CanBeResolved);
+            Assert.Equal(false, promise1.CanBeCanceled);
+            
+            Assert.Equal(false, promise2.CanBeResolved);
+            Assert.Equal(false, promise2.CanBeCanceled);
+            
+            Assert.Equal(false, then1Called);
+            Assert.Equal(false, then2Called);
+            Assert.Equal(false, then3Called);
+            Assert.Equal(false, then4Called);
+            
+            Assert.Equal(true, cancel1Called);
+            Assert.Equal(true, cancel2Called);
+        }
+        
+        [Fact]
+        public void can_cancel_promise_all_by_cancelling_child()
+        {
+            var promise1 = new Promise();
+            var promise2 = new Promise();
+
+            var then1Called = false;
+            var then2Called = false;
+            var then3Called = false;
+            var then4Called = false;
+            
+            var cancel1Called = false;
+            var cancel2Called = false;
+
+            promise1.Then(() =>
+                {
+                    then1Called = true;
+                })
+                .Then(() =>
+                {
+                    then2Called = true;
+                }).OnCancel(() =>
+                {
+                    cancel1Called = true;
+                });
+
+            promise2.Then(() =>
+                {
+                    then3Called = true;
+                })
+                .Then(() =>
+                {
+                    then4Called = true;
+                })
+                .OnCancel(() =>
+                {
+                    cancel2Called = true;
+                });
+
+            var promiseAll = Promise.All(promise1, promise2);
+            promise2.Cancel();
+            
+            var resolved = promise1.TryResolve();
+            
+            Assert.Equal(false, resolved);
+            
+            Assert.Equal(false, promise1.CanBeResolved);
+            Assert.Equal(false, promise1.CanBeCanceled);
+            
+            Assert.Equal(false, promiseAll.CanBeCanceled);
+            
+            Assert.Equal(false, promise2.CanBeResolved);
+            Assert.Equal(false, promise2.CanBeCanceled);
+            
+            Assert.Equal(false, then1Called);
+            Assert.Equal(false, then2Called);
+            Assert.Equal(false, then3Called);
+            Assert.Equal(false, then4Called);
+            
+            Assert.Equal(true, cancel1Called);
+            Assert.Equal(true, cancel2Called);
+        }
     }
 }

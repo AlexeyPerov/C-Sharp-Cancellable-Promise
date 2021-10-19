@@ -6,10 +6,10 @@ namespace RSG
 {
     public static class CancelableExtensions
     {
-        public static ICancelable FindLastPendingParent(this ICancelable cancelable)
+        public static ICancellablePromise FindLastPendingParent(this ICancellablePromise cancellable)
         {
-            ICancelable result;
-            var next = cancelable;
+            ICancellablePromise result;
+            var next = cancellable;
             
             do
             {
@@ -20,11 +20,11 @@ namespace RSG
             return result;
         }
         
-        public static List<ICancelable> GetCancelSequenceFromParentToThis(this ICancelable cancelable)
+        public static List<ICancellablePromise> GetCancelSequenceFromParentToThis(this ICancellablePromise cancellable)
         {
-            var result = new List<ICancelable>();
+            var result = new List<ICancellablePromise>();
 
-            var next = cancelable;
+            var next = cancellable;
             
             do
             {
@@ -35,34 +35,34 @@ namespace RSG
             return result;
         }
         
-        public static List<ICancelable> CollectSelfAndAllPendingChildren(this ICancelable cancelable)
+        public static List<ICancellablePromise> CollectSelfAndAllPendingChildren(this ICancellablePromise cancellable)
         {
-            var result = new List<ICancelable>();
-            AddSelfAndChildren(result, cancelable);
+            var result = new List<ICancellablePromise>();
+            AddSelfAndChildren(result, cancellable);
             return result;
         }
 
-        private static void AddSelfAndChildren(List<ICancelable> result, ICancelable cancelable)
+        private static void AddSelfAndChildren(List<ICancellablePromise> result, ICancellablePromise cancellable)
         {
-            if (cancelable.CanBeCanceled)
+            if (cancellable.CanBeCanceled)
             {
-                result.Add(cancelable);
+                result.Add(cancellable);
             }
 
-            foreach (var child in cancelable.Children.Where(x => x.CanBeCanceled))
+            foreach (var child in cancellable.Children.Where(x => x.CanBeCanceled))
             {
                 AddSelfAndChildren(result, child);
             }
         }
         
-        public static string GetTreeDescription(this ICancelable promise)
+        public static string GetTreeDescription(this ICancellablePromise promise)
         {
             var result = string.Empty;
             RecordSelfAndChildren(ref result, promise, 0);
             return result;
         }
         
-        private static void RecordSelfAndChildren(ref string result, ICancelable promise, int indent)
+        private static void RecordSelfAndChildren(ref string result, ICancellablePromise promise, int indent)
         {
             var indentString = "\n";
 

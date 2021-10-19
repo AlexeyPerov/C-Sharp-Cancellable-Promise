@@ -1,6 +1,7 @@
 using System;
 using RSG.Exceptions;
 
+// ReSharper disable once CheckNamespace
 namespace RSG
 {
     public static class EventsReceiver
@@ -74,5 +75,4 @@ namespace RSG
             Console.WriteLine(exception);
         }
     }
-
 }

@@ -12,7 +12,7 @@ namespace RSG
     /// Implements a C# promise.
     /// https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise
     /// </summary>
-    public interface IPromise<PromisedT> : ICancelable
+    public interface IPromise<PromisedT> : ICancellablePromise
     {
         /// <summary>
         /// Gets the id of the promise, useful for referencing the promise during runtime.
@@ -302,12 +302,12 @@ namespace RSG
         /// <summary>
         /// Promise parent in chain.
         /// </summary>
-        public ICancelable Parent { get; private set; }
+        public ICancellablePromise Parent { get; private set; }
 
         /// <summary>
         /// Promise children in chain.
         /// </summary>
-        public HashSet<ICancelable> Children { get; } = new HashSet<ICancelable>();
+        public HashSet<ICancellablePromise> Children { get; } = new HashSet<ICancellablePromise>();
 
         /// <summary>
         /// Get loggable name.
@@ -360,7 +360,7 @@ namespace RSG
         /// Attach a parent in chain.
         /// </summary>
         /// <param name="parent"></param>
-        public void AttachParent(ICancelable parent)
+        public void AttachParent(ICancellablePromise parent)
         {
             if (parent.Parent == this)
             {
@@ -382,7 +382,7 @@ namespace RSG
         /// Add a child in chain.
         /// </summary>
         /// <param name="child"></param>
-        public void AttachChild(ICancelable child)
+        public void AttachChild(ICancellablePromise child)
         {
             Children.Add(child);
         }

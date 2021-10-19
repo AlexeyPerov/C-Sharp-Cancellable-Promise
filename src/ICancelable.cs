@@ -35,11 +35,5 @@ namespace RSG
         /// It only cancels the result promise of calling last .Then
         /// </summary>
         void CancelSelf();
-
-        /// <summary>
-        /// Cancels self and all of its children no matter of the state of their parents.
-        /// e.g. sequence of pending -> cancelled -> pending will all be cancelled.
-        /// </summary>
-        void CancelSelfAndAllChildren();
     }
 }

@@ -1486,12 +1486,5 @@ namespace RSG
                 unhandlerException(sender, new ExceptionEventArgs(ex));
             }
         }
-        
-        public static Promise FromCancellationTokenSource(CancellationTokenSource cancellationTokenSource)
-        {
-            var promise = new Promise();
-            promise.OnCancel(cancellationTokenSource.Cancel);
-            return promise;
-        }
     }
 }

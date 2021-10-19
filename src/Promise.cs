@@ -1417,13 +1417,6 @@ namespace RSG
             return this;
         }
 
-        public static Promise<PromisedT> FromCancellationTokenSource(CancellationTokenSource cancellationTokenSource)
-        {
-            var promise = new Promise<PromisedT>();
-            promise.OnCancel(cancellationTokenSource.Cancel);
-            return promise;
-        }
-
         public static IPromise<T> Canceled<T>()
         {
             var promise = new Promise<T>();

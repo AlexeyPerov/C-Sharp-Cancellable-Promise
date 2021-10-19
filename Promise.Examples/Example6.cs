@@ -32,7 +32,7 @@ namespace Promise.Examples
 
             WaitFor(1, () =>
             {
-                promise.Resolve();
+                promise.TryResolve();
                 Console.WriteLine("TREE: " + promise.GetTreeDescription());
             });
             

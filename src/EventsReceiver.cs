@@ -5,7 +5,7 @@ namespace RSG
 {
     public static class EventsReceiver
     {
-        private static IEventsReceiver Receiver { get; set; }= new DefaultEventsReceiver();
+        private static IEventsReceiver Receiver { get; set; } = new DefaultEventsReceiver();
 
         public static void SetLogger(IEventsReceiver receiver)
         {
@@ -51,17 +51,17 @@ namespace RSG
     {
         public void OnVerbose(string message)
         {
-            
+            Console.WriteLine(message);
         }
 
         public void OnWarningMinor(string message)
         {
-            
+            Console.WriteLine(message);
         }
 
         public void OnWarning(string message)
         {
-            
+            Console.WriteLine(message);
         }
 
         public void OnStateException(PromiseStateException exception)
@@ -71,7 +71,7 @@ namespace RSG
 
         public void OnException(Exception exception)
         {
-            // throw exception;
+            Console.WriteLine(exception);
         }
     }
 

@@ -6,20 +6,6 @@ namespace RSG
 {
     public static class CancelableExtensions
     {
-        public static ICancelable FindLastPendingParent(this ICancelable cancelable)
-        {
-            ICancelable result;
-            var next = cancelable;
-            
-            do
-            {
-                result = next;
-                next = result.Parent;
-            } while (next != null && next.CanBeCanceled);
-
-            return result;
-        }
-
         public static List<ICancelable> GetCancelSequenceFromParentToThis(this ICancelable cancelable)
         {
             var result = new List<ICancelable>();

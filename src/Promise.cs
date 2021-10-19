@@ -637,6 +637,16 @@ namespace RSG
             }
         }
 
+        public bool TryResolve(PromisedT value)
+        {
+            if (CurState != PromiseState.Pending)
+            {
+                return false;
+            }
+            
+            Resolve(value);
+            return true;
+        }
 
         /// <summary>
         /// Resolve the promise with a particular value.

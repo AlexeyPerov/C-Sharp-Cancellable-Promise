@@ -711,7 +711,6 @@ namespace RSG
             InvokeRejectHandlers(ex);            
         }
         
-        
         public void Cancel()
         {
             var sequence = this.GetCancelSequenceFromParentToThis();
@@ -762,6 +761,17 @@ namespace RSG
             {
                 cancelable.CancelSelf();
             }
+        }
+
+        public bool TryResolve()
+        {
+            if (CurState != PromiseState.Pending)
+            {
+                return false;
+            }
+            
+            Resolve();
+            return true;
         }
 
         /// <summary>

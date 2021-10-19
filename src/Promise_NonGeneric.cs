@@ -706,16 +706,23 @@ namespace RSG
             InvokeRejectHandlers(ex);            
         }
         
+        /// <summary>
+        /// Cancels the whole chain where this promise exists.
+        /// </summary>
         public void Cancel()
         {
-            var sequence = this.GetCancelSequenceFromParentToThis();
-            foreach (var cancelable in sequence)
+            var parent = this.FindLastPendingParent();
+            if (parent == null || parent == this)
             {
-                cancelable.CancelSelf();
+                CancelInternal();
+            }
+            else
+            {
+                parent.Cancel();
             }
         }
-
-        void ICancelable.CancelSelf()
+        
+        private void CancelInternal()
         {
             if (CurState != PromiseState.Pending)
             {
@@ -729,16 +736,6 @@ namespace RSG
             }
             InvokeCancelHandlers();
             ClearHandlers();
-        }
-
-        public void CancelSelfAndAllChildren()
-        {
-            var sequence = this.CollectSelfAndAllPendingChildren();
-            
-            foreach (var cancelable in sequence)
-            {
-                cancelable.CancelSelf();
-            }
         }
 
         public bool TryResolve()

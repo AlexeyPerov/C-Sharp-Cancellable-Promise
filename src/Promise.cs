@@ -269,6 +269,7 @@ namespace RSG
         /// Completed handlers that accept a value.
         /// </summary>
         private List<Action<PromisedT>> resolveCallbacks;
+
         private List<IRejectable> resolveRejectables;
 
         /// <summary>
@@ -287,27 +288,27 @@ namespace RSG
         /// Tracks the current state of the promise.
         /// </summary>
         public PromiseState CurState { get; private set; }
-        
+
         /// <summary>
         /// Shortcut property for checking if promise is pending.
         /// </summary>
         public bool CanBeResolved => CurState == PromiseState.Pending;
-        
+
         /// <summary>
         /// Shortcut property for checking if promise is pending.
         /// </summary>
         public bool CanBeCanceled => CurState == PromiseState.Pending;
-        
+
         /// <summary>
         /// Promise parent in chain.
         /// </summary>
         public ICancelable Parent { get; private set; }
-        
+
         /// <summary>
         /// Promise children in chain.
         /// </summary>
         public HashSet<ICancelable> Children { get; } = new HashSet<ICancelable>();
-        
+
         /// <summary>
         /// Get loggable name.
         /// </summary>
@@ -354,7 +355,7 @@ namespace RSG
             CurState = initialState;
             id = Promise.NextId();
         }
-        
+
         /// <summary>
         /// Attach a parent in chain.
         /// </summary>
@@ -372,7 +373,7 @@ namespace RSG
             {
                 EventsReceiver.OnWarningMinor($"Overwriting existing parent {GetName()}");
             }
-            
+
             Parent = parent;
             parent.AttachChild(this);
         }
@@ -410,8 +411,9 @@ namespace RSG
             {
                 cancelHandlers = new List<Promise.ResolveHandler>();
             }
-                
-            cancelHandlers.Add(new Promise.ResolveHandler {
+
+            cancelHandlers.Add(new Promise.ResolveHandler
+            {
                 callback = onCanceled,
                 rejectable = rejectable
             });
@@ -498,14 +500,15 @@ namespace RSG
         {
             if (resolveCallbacks != null)
             {
-                for (int i = 0, maxI = resolveCallbacks.Count; i < maxI; i++) {
+                for (int i = 0, maxI = resolveCallbacks.Count; i < maxI; i++)
+                {
                     InvokeHandler(resolveCallbacks[i], resolveRejectables[i], value);
                 }
             }
 
             ClearHandlers();
         }
-        
+
         /// <summary>
         /// Invoke all cancel handlers.
         /// </summary>
@@ -561,7 +564,7 @@ namespace RSG
 
             RejectSilent(ex);
         }
-        
+
         /// <summary>
         /// Reject the promise with an exception. Doesn't call OnError.
         /// </summary>
@@ -570,8 +573,8 @@ namespace RSG
             if (CurState != PromiseState.Pending)
             {
                 EventsReceiver.OnStateException(new PromiseStateException(
-                    "Attempt to reject a promise that is already in state: " + CurState 
-                                                                             + ", a promise can only be rejected when it is still in state: " 
+                    "Attempt to reject a promise that is already in state: " + CurState
+                                                                             + ", a promise can only be rejected when it is still in state: "
                                                                              + PromiseState.Pending
                 ));
                 return;
@@ -587,23 +590,24 @@ namespace RSG
 
             InvokeRejectHandlers(ex);
         }
-        
+
         /// <summary>
-        /// Cancels sequence of promises from the first pending parent towards this promise.
+        /// Cancels the whole chain where this promise exists.
         /// </summary>
         public void Cancel()
         {
-            var sequence = this.GetCancelSequenceFromParentToThis();
-            foreach (var cancelable in sequence)
+            var parent = this.FindLastPendingParent();
+            if (parent == null || parent == this)
             {
-                cancelable.CancelSelf();
+                CancelInternal();
+            }
+            else
+            {
+                parent.Cancel();
             }
         }
-        
-        /// <summary>
-        /// Cancels only current promise. In most cases it is not what you might think.
-        /// </summary>
-        public void CancelSelf()
+
+        private void CancelInternal()
         {
             if (CurState != PromiseState.Pending)
             {
@@ -617,19 +621,6 @@ namespace RSG
             }
             InvokeCancelHandlers();
             ClearHandlers();
-        }
-        
-        /// <summary>
-        /// Cancels self and all of its children no matter of the state of their parents.
-        /// </summary>
-        public void CancelSelfAndAllChildren()
-        {
-            var sequence = this.CollectSelfAndAllPendingChildren();
-            
-            foreach (var cancelable in sequence)
-            {
-                cancelable.CancelSelf();
-            }
         }
 
         public bool TryResolve(PromisedT value)

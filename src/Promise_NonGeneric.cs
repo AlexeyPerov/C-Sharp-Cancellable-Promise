@@ -718,23 +718,6 @@ namespace RSG
             {
                 cancelable.CancelSelf();
             }
-            
-#if UNITY_EDITOR
-            var foundTangledPromises = false;
-            
-            foreach (var cancelable in sequence)
-            {
-                if (!foundTangledPromises && cancelable.Children.Any(x => x.CanBeCanceled))
-                {
-                    foundTangledPromises = true;
-                }
-            }
-
-            if (foundTangledPromises)
-            {
-                ProLogger.LogWarningEditor($"Found tangled promises after cancellation of {GetDescription()}");
-            }
-#endif
         }
 
         public void CancelSelf()

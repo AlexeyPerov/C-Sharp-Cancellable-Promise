@@ -1131,6 +1131,7 @@ namespace RSG
                     ++count;
 
                     var newPromise = new Promise<T>();
+                    
                     prevPromise
                         .Progress(v =>
                         {
@@ -1148,8 +1149,8 @@ namespace RSG
                                 .Catch(newPromise.Reject)
                                 .Done()
                             ;
-                        })
-                    ;
+                        });
+
                     return newPromise;
                 })
             .Then(value => promise.Resolve(value))
@@ -1159,6 +1160,8 @@ namespace RSG
                 promise.Reject(ex);
             });
 
+            promise.OnCancel(() => throw new NotSupportedException());
+            
             return promise;
         }
 
@@ -1304,6 +1307,8 @@ namespace RSG
 
             promisesArray.Each((promise, index) =>
             {
+                resultPromise.OnCancel(promise.Cancel);
+                
                 promise
                     .Progress(v =>
                     {

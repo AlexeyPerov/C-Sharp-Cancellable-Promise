@@ -2,6 +2,7 @@ using System;
 using RSG.Exceptions;
 using Xunit;
 
+// ReSharper disable once CheckNamespace
 namespace RSG.Tests
 {
     public class PromiseCancelTests
@@ -22,6 +23,11 @@ namespace RSG.Tests
             
             Assert.Equal(false, promise.CanBeResolved);
             Assert.Equal(false, promise.CanBeCanceled);
+
+            foreach (var state in promise.GetAllTreeStates())
+            {
+                Assert.Equal(PromiseState.Cancelled, state);
+            }
         }
         
         [Fact]
@@ -40,6 +46,11 @@ namespace RSG.Tests
             
             Assert.Equal(false, promise.CanBeResolved);
             Assert.Equal(false, promise.CanBeCanceled);
+            
+            foreach (var state in promise.GetAllTreeStates())
+            {
+                Assert.Equal(PromiseState.Cancelled, state);
+            }
         }
         
         [Fact]
@@ -72,6 +83,11 @@ namespace RSG.Tests
             
             Assert.NotNull(exception);
             Assert.Equal(typeof(PromiseStateException), exception.GetType());
+            
+            foreach (var state in promise.GetAllTreeStates())
+            {
+                Assert.Equal(PromiseState.Cancelled, state);
+            }
         }
         
         [Fact]
@@ -129,6 +145,11 @@ namespace RSG.Tests
             
             Assert.Equal(true, cancel1Called);
             Assert.Equal(true, cancel2Called);
+            
+            foreach (var state in promise.GetAllTreeStates())
+            {
+                Assert.Equal(PromiseState.Cancelled, state);
+            }
         }
         
         [Fact]
@@ -187,6 +208,11 @@ namespace RSG.Tests
             
             Assert.Equal(true, cancel1Called);
             Assert.Equal(true, cancel2Called);
+            
+            foreach (var state in promise.GetAllTreeStates())
+            {
+                Assert.Equal(PromiseState.Cancelled, state);
+            }
         }
 
         [Fact]
@@ -248,6 +274,11 @@ namespace RSG.Tests
             
             Assert.Equal(true, cancel1Called);
             Assert.Equal(true, cancel2Called);
+            
+            foreach (var state in promiseAll.GetAllTreeStates())
+            {
+                Assert.Equal(PromiseState.Cancelled, state);
+            }
         }
         
         [Fact]
@@ -311,6 +342,161 @@ namespace RSG.Tests
             
             Assert.Equal(true, cancel1Called);
             Assert.Equal(true, cancel2Called);
+            
+            foreach (var state in promiseAll.GetAllTreeStates())
+            {
+                Assert.Equal(PromiseState.Cancelled, state);
+            }
+        }
+
+        [Fact]
+        public void can_cancel_promise_race()
+        {
+            var promise1 = new Promise();
+            var promise2 = new Promise();
+
+            var then1Called = false;
+            var then2Called = false;
+            
+            var cancel1Called = false;
+            var cancel2Called = false;
+            
+            promise1.Then(() =>
+            {
+                then1Called = true;
+            }).OnCancel(() =>
+            {
+                cancel1Called = true;
+            });
+
+            promise2.Then(() =>
+            {
+                then2Called = true;
+            }).OnCancel(() =>
+            {
+                cancel2Called = true;
+            });
+
+            var race = Promise.Race(promise1, promise2);
+            race.Cancel();
+
+            promise1.TryResolve();
+            promise2.TryResolve();
+            
+            Assert.Equal(false, then1Called);
+            Assert.Equal(false, then2Called);
+            
+            Assert.Equal(true, cancel1Called);
+            Assert.Equal(true, cancel2Called);
+            
+            Assert.Equal(false, promise1.CanBeResolved);
+            Assert.Equal(false, promise2.CanBeResolved);
+            
+            foreach (var state in race.GetAllTreeStates())
+            {
+                Assert.Equal(PromiseState.Cancelled, state);
+            }
+        }
+        
+        [Fact]
+        public void can_cancel_promise_race_valued()
+        {
+            var promise1 = new Promise<int>();
+            var promise2 = new Promise<int>();
+
+            var then1Called = false;
+            var then2Called = false;
+            
+            var cancel1Called = false;
+            var cancel2Called = false;
+            
+            promise1.Then(x =>
+            {
+                then1Called = true;
+            }).OnCancel(() =>
+            {
+                cancel1Called = true;
+            });
+
+            promise2.Then(x =>
+            {
+                then2Called = true;
+            }).OnCancel(() =>
+            {
+                cancel2Called = true;
+            });
+
+            var race = Promise<int>.Race(promise1, promise2);
+            race.Cancel();
+
+            promise1.TryResolve(5);
+            promise2.TryResolve(6);
+            
+            Assert.Equal(false, then1Called);
+            Assert.Equal(false, then2Called);
+            
+            Assert.Equal(true, cancel1Called);
+            Assert.Equal(true, cancel2Called);
+            
+            Assert.Equal(false, promise1.CanBeResolved);
+            Assert.Equal(false, promise2.CanBeResolved);
+            
+            foreach (var state in race.GetAllTreeStates())
+            {
+                Assert.Equal(PromiseState.Cancelled, state);
+            }
+        }
+        
+        [Fact]
+        public void cant_cancel_promise_first()
+        {
+            var promise1 = new Promise<int>();
+            var promise2 = new Promise<int>();
+            
+            promise1.Then(x => { });
+            promise2.Then(x => { });
+
+            var first = Promise<int>.First(() => promise1, () => promise2);
+
+            Exception exception = null;
+
+            try
+            {
+                first.Cancel();
+            }
+            catch (Exception e)
+            {
+                exception = e;
+            }
+            
+            Assert.NotNull(exception);
+            Assert.Equal(typeof(PromiseStateException), exception.GetType());
+        }
+        
+        [Fact]
+        public void cant_cancel_promise_sequence()
+        {
+            var promise1 = new Promise();
+            var promise2 = new Promise();
+            
+            promise1.Then(() => { });
+            promise2.Then(() => { });
+
+            var first = Promise.Sequence(() => promise1, () => promise2);
+
+            Exception exception = null;
+
+            try
+            {
+                first.Cancel();
+            }
+            catch (Exception e)
+            {
+                exception = e;
+            }
+            
+            Assert.NotNull(exception);
+            Assert.Equal(typeof(PromiseStateException), exception.GetType());
         }
     }
 }

@@ -1298,8 +1298,6 @@ namespace RSG
                 Resolved(),
                 (prevPromise, fn) =>
                 {
-                    prevPromise.AttachParent(promise);
-                    
                     int itemSequence = count;
                     ++count;
 
@@ -1321,6 +1319,8 @@ namespace RSG
             .Then((Action)promise.Resolve)
             .Catch(promise.Reject);
 
+            promise.OnCancel(() => throw new NotSupportedException());
+            
             return promise;
         }
 
@@ -1373,6 +1373,8 @@ namespace RSG
 
             promisesArray.Each((promise, index) =>
             {
+                resultPromise.OnCancel(promise.Cancel);
+                
                 promise
                     .Progress(v =>
                     {

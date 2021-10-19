@@ -78,5 +78,22 @@ namespace RSG
                 RecordSelfAndChildren(ref result, child, indent + 1);
             }
         }
+
+        public static List<PromiseState> GetAllTreeStates(this ICancellablePromise promise)
+        {
+            var result = new List<PromiseState>();
+            FillSelfAndChildren(ref result, promise);
+            return result;
+        }
+        
+        private static void FillSelfAndChildren(ref List<PromiseState> result, ICancellablePromise promise)
+        {
+            result.Add(promise.CurState);
+
+            foreach (var child in promise.Children)
+            {
+                FillSelfAndChildren(ref result, child);
+            }
+        }
     }
 }

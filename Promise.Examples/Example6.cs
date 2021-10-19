@@ -9,6 +9,8 @@ namespace Promise.Examples
     {
         public static void Run()
         {
+            Case0();
+            Console.ReadKey();
             Case1();
             Console.ReadKey();
             Case2();
@@ -17,6 +19,29 @@ namespace Promise.Examples
             Console.ReadKey();
             Case4();
             Console.ReadKey();
+        }
+        
+        private static void Case0()
+        {
+            Console.WriteLine("Run Case 0.");
+            
+            var promise = new RSG.Promise();
+
+            var handler = promise.Then(() => { Console.WriteLine("THEN 1"); });
+                
+            var handler11 = handler.Then(() => {Console.WriteLine("THEN 1.1");}).Then(() => {Console.WriteLine("Then 1.1.1");});
+            var handler12 = handler.Then(() => {Console.WriteLine("THEN 1.2");}).Then(() => {Console.WriteLine("Then 1.2.1");});
+
+            handler11.OnCancel(() => {Console.WriteLine("CANCELED 1.1");});
+            handler12.OnCancel(() => {Console.WriteLine("CANCELED 1.2");});
+
+            WaitFor(1, () =>
+            {
+                promise.TryResolve();
+                Console.WriteLine("TREE: " + promise.GetTreeDescription());
+            });
+            
+            promise.Cancel();
         }
 
         private static void Case1()

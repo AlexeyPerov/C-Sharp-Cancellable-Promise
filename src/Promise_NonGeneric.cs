@@ -15,11 +15,6 @@ namespace RSG
     public interface IPromise : ICancelable
     {
         /// <summary>
-        /// Current state of promise
-        /// </summary>
-        PromiseState CurState { get; }
-        
-        /// <summary>
         /// ID of the promise, useful for debugging.
         /// </summary>
         int Id { get; }

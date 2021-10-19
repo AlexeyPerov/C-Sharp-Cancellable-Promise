@@ -5,6 +5,11 @@ namespace RSG
 {
     public interface ICancelable
     {
+        /// <summary>
+        /// Current state of promise
+        /// </summary>
+        PromiseState CurState { get; }
+        
         bool CanBeCanceled { get; }
         ICancelable Parent { get; }
         HashSet<ICancelable> Children { get; }

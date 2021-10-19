@@ -57,7 +57,7 @@ namespace RSG
                 indentString += " ";
             }
             
-            result += indentString + promise.CanBeCanceled;
+            result += indentString + promise.CurState;
 
             foreach (var child in promise.Children)
             {

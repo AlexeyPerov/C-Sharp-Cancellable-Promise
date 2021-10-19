@@ -25,11 +25,6 @@ namespace RSG
         IPromise<PromisedT> WithName(string name);
         
         /// <summary>
-        /// Current state of promise
-        /// </summary>
-        PromiseState CurState { get; }
-
-        /// <summary>
         /// Completes the promise. 
         /// onResolved is called on successful completion.
         /// onRejected is called on error.

@@ -220,7 +220,6 @@ namespace RSG.Tests
         [Fact]
         public void chain_multiple_promises_using_first()
         {
-            var promise = new Promise<int>();
             var chainedPromise1 = Promise<int>.Rejected(null);
             var chainedPromise2 = Promise<int>.Rejected(null);
             var chainedPromise3 = Promise<int>.Resolved(9001);

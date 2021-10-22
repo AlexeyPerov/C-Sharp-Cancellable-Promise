@@ -80,4 +80,6 @@ promive.Finally(...);
 
 ## Getting it in your project
 
-Copy all sources from [/src/Promises folder](./src/Promises) to your Unity project.
+The simplest way would be to copy all sources from [/src/Promises folder](./src/Promises) to your Unity project. 
+
+Otherwise, see the RSG.Promise project for the all code you may need.

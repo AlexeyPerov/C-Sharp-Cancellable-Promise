@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Promise.Tests", "Promise.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Promise.Examples", "Promise.Examples\Promise.Examples.csproj", "{79F4DA45-F286-4EED-AAC0-4BF8B81C9422}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DisposeService", "DisposeService\DisposeService.csproj", "{5AFA74A4-A126-4E7F-B10C-71D709B72C11}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{79F4DA45-F286-4EED-AAC0-4BF8B81C9422}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{79F4DA45-F286-4EED-AAC0-4BF8B81C9422}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{79F4DA45-F286-4EED-AAC0-4BF8B81C9422}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AFA74A4-A126-4E7F-B10C-71D709B72C11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AFA74A4-A126-4E7F-B10C-71D709B72C11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AFA74A4-A126-4E7F-B10C-71D709B72C11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AFA74A4-A126-4E7F-B10C-71D709B72C11}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

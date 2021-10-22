@@ -80,7 +80,7 @@ promive.Finally(...);
 
 ## Cancellation utilities
 
-For an additional code see branch dispose_service where you can find DisposeUtilities project with tools to deal with cancellation and objects disposal in a neat way.
+For an additional code see branch dispose_service where you can find DisposeService project with tools to deal with cancellation and objects disposal in a neat way.
 See examples:
 
 ```cs

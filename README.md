@@ -78,8 +78,46 @@ promise.Then(...).Then(...).CancelWith(provider);
 promive.Finally(...);
 ```
 
+## Cancellation utilities
+
+For an additional code see branch dispose_service where you can find DisposeUtilities project with tools to deal with cancellation and objects disposal in a neat way.
+See examples:
+
+```cs
+public class ExampleMonoBehaviour : DisposableMonoBehaviour
+{
+    private void Start()
+    {
+        // here we indicate that this Promise must be cancelled with the end of lifecycle of this object.
+        DoLongAction().CancelWith(this);
+    }
+
+    private IPromise DoLongAction()
+    {
+        // something long enough which may finish by the time the Example gameObject will be destroyed.
+    }
+}
+
+public class ExampleState : DisposableFSMState // (custom class which inherits from IDisposeProvider)
+{
+    protected override void OnEnter()
+    {
+        base.OnEnter();
+        // here we indicate that this Promise must be cancelled with the end of lifecycle of this state.
+        DoLongAction().CancelWith(this);
+    }
+
+    private IPromise DoLongAction()
+    {
+        // something long enough which may finish by the time the ExampleState will be finished.
+    }
+}
+```
+
 ## Getting it in your project
 
 The simplest way would be to copy all sources from [/src/Promises folder](./src/Promises) to your Unity project. 
 
 Otherwise, see the RSG.Promise project for the all code you may need.
+
+

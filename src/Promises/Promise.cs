@@ -2,7 +2,6 @@ using RSG.Promises;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using RSG.Exceptions;
 
 // ReSharper disable once CheckNamespace

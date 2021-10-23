@@ -84,7 +84,7 @@ For an additional code see branch dispose_service where you can find DisposeServ
 See examples:
 
 ```cs
-public class ExampleMonoBehaviour : DisposableMonoBehaviour
+public class ExampleMonoBehaviour : DisposableMonoBehaviour // plain MonoBehaviour will also be fine. CancelWith can deal with it too
 {
     private void Start()
     {

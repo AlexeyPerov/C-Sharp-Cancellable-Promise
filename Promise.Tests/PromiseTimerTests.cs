@@ -13,7 +13,7 @@ namespace RSG.Tests
             const int testFrame = 3;
             var hasResolved = false;
 
-            testObject.WaitUntil(timeData => timeData.elapsedUpdates == testFrame)
+            testObject.WaitUntil(timeData => timeData.ElapsedUpdates == testFrame)
                 .Then(() => hasResolved = true)
                 .Done();
 
@@ -133,7 +133,7 @@ namespace RSG.Tests
 
 
             var promise = testObject
-                .WaitUntil(timeData => timeData.elapsedTime > 1.0f)
+                .WaitUntil(timeData => timeData.ElapsedTime > 1.0f)
                 .Then(() => hasResolved = true)
                 .Catch(ex => caughtException = ex);
 
@@ -157,7 +157,7 @@ namespace RSG.Tests
 
 
             var promise = testObject
-                .WaitUntil(timeData => timeData.elapsedTime > 1.0f);
+                .WaitUntil(timeData => timeData.ElapsedTime > 1.0f);
             promise.Catch(ex => caughtException = ex);
 
             promise.Done(null, ex => caughtException = ex);

@@ -16,7 +16,7 @@ namespace RSG.Tests.A__Spec
 
                 var resultPromise = promise
                     .Then(
-                        (Func<object, IPromise>)null,
+                        null,
                         ex => { }
                     );
 

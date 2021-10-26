@@ -1,7 +1,7 @@
-using RSG.Promises;
 using System;
 using System.Linq;
 using RSG.Exceptions;
+using RSG.Promises;
 using Xunit;
 
 namespace RSG.Tests
@@ -214,8 +214,7 @@ namespace RSG.Tests
             TestHelpers.VerifyDoesntThrowUnhandledException(() =>
             {
                 promise
-                    .ThenAll(() => EnumerableExt.FromItems(chainedPromise1, chainedPromise2)
-                        .Cast<IPromise>())
+                    .ThenAll(() => EnumerableExt.FromItems(chainedPromise1, chainedPromise2))
                     .Then(() => ++completed);
 
                 Assert.Equal(0, completed);
@@ -248,8 +247,7 @@ namespace RSG.Tests
             TestHelpers.VerifyDoesntThrowUnhandledException(() =>
             {
                 promise
-                    .ThenAll(() => EnumerableExt.FromItems(chainedPromise1, chainedPromise2)
-                        .Cast<IPromise<int>>())
+                    .ThenAll(() => EnumerableExt.FromItems(chainedPromise1, chainedPromise2))
                     .Then(result =>
                     {
                         var items = result.ToArray();
@@ -290,8 +288,7 @@ namespace RSG.Tests
             TestHelpers.VerifyDoesntThrowUnhandledException(() =>
             {
                 promise
-                    .ThenAll(() => EnumerableExt.FromItems(chainedPromise1, chainedPromise2)
-                        .Cast<IPromise<int>>())
+                    .ThenAll(() => EnumerableExt.FromItems(chainedPromise1, chainedPromise2))
                     .Then(result =>
                     {
                         var items = result.ToArray();

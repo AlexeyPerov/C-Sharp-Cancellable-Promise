@@ -17,13 +17,13 @@ namespace Promise.Examples
         //
         // URL for a google search on 'promises'.
         //
-        private static string searchUrl = "https://www.google.com/#q=promises";
+        private static string _searchUrl = "https://www.google.com/#q=promises";
 
         public static void Run()
         {
             var running = true;
 
-            Download(searchUrl)         // Invoke a google search.
+            Download(_searchUrl)         // Invoke a google search.
                 .Then(html =>           // Transforms search results and extract links.
                 {
                     return LinkFinder

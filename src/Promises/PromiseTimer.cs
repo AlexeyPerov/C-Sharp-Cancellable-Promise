@@ -32,27 +32,27 @@ namespace RSG
         /// <summary>
         /// Predicate for resolving the promise
         /// </summary>
-        public Func<TimeData, bool> predicate;
+        public Func<TimeData, bool> Predicate;
 
         /// <summary>
         /// The time the promise was started
         /// </summary>
-        public float timeStarted;
+        public float TimeStarted;
 
         /// <summary>
         /// The pending promise which is an interface for a promise that can be rejected or resolved.
         /// </summary>
-        public IPendingPromise pendingPromise;
+        public IPendingPromise PendingPromise;
 
         /// <summary>
         /// The time data specific to this pending promise. Includes elapsed time and delta time.
         /// </summary>
-        public TimeData timeData;
+        public TimeData TimeData;
 
         /// <summary>
         /// The frame the promise was started
         /// </summary>
-        public int frameStarted;
+        public int FrameStarted;
     }
 
     /// <summary>
@@ -63,17 +63,17 @@ namespace RSG
         /// <summary>
         /// The amount of time that has elapsed since the pending promise started running
         /// </summary>
-        public float elapsedTime;
+        public float ElapsedTime;
 
         /// <summary>
         /// The amount of time since the last time the pending promise was updated.
         /// </summary>
-        public float deltaTime;
+        public float DeltaTime;
 
         /// <summary>
         /// The amount of times that update has been called since the pending promise started running
         /// </summary>
-        public int elapsedUpdates;
+        public int ElapsedUpdates;
     }
 
     public interface IPromiseTimer
@@ -109,24 +109,24 @@ namespace RSG
         /// <summary>
         /// The current running total for time that this PromiseTimer has run for
         /// </summary>
-        private float curTime;
+        private float _curTime;
 
         /// <summary>
         /// The current running total for the amount of frames the PromiseTimer has run for
         /// </summary>
-        private int curFrame;
+        private int _curFrame;
 
         /// <summary>
         /// Currently pending promises
         /// </summary>
-        private readonly LinkedList<PredicateWait> waiting = new LinkedList<PredicateWait>();
+        private readonly LinkedList<PredicateWait> _waiting = new LinkedList<PredicateWait>();
 
         /// <summary>
         /// Resolve the returned promise once the time has elapsed
         /// </summary>
         public IPromise WaitFor(float seconds)
         {
-            return WaitUntil(t => t.elapsedTime >= seconds);
+            return WaitUntil(t => t.ElapsedTime >= seconds);
         }
 
         /// <summary>
@@ -144,16 +144,16 @@ namespace RSG
         {
             var promise = new Promise();
 
-            var wait = new PredicateWait()
+            var wait = new PredicateWait
             {
-                timeStarted = curTime,
-                pendingPromise = promise,
-                timeData = new TimeData(),
-                predicate = predicate,
-                frameStarted = curFrame
+                TimeStarted = _curTime,
+                PendingPromise = promise,
+                TimeData = new TimeData(),
+                Predicate = predicate,
+                FrameStarted = _curFrame
             };
 
-            waiting.AddLast(wait);
+            _waiting.AddLast(wait);
 
             return promise;
         }
@@ -167,17 +167,17 @@ namespace RSG
                 return false;
             }
 
-            node.Value.pendingPromise.RejectSilent(new PromiseCancelledException("Promise was cancelled by user."));
-            waiting.Remove(node);
+            node.Value.PendingPromise.RejectSilent(new PromiseCancelledException("Promise was cancelled by user."));
+            _waiting.Remove(node);
 
             return true;
         }
 
         LinkedListNode<PredicateWait> FindInWaiting(IPromise promise)
         {
-            for (var node = waiting.First; node != null; node = node.Next)
+            for (var node = _waiting.First; node != null; node = node.Next)
             {
-                if (node.Value.pendingPromise.Id.Equals(promise.Id))
+                if (node.Value.PendingPromise.Id.Equals(promise.Id))
                 {
                     return node;
                 }
@@ -191,28 +191,28 @@ namespace RSG
         /// </summary>
         public void Update(float deltaTime)
         {
-            curTime += deltaTime;
-            curFrame += 1;
+            _curTime += deltaTime;
+            _curFrame += 1;
 
-            var node = waiting.First;
+            var node = _waiting.First;
             while (node != null)
             {
                 var wait = node.Value;
 
-                var newElapsedTime = curTime - wait.timeStarted;
-                wait.timeData.deltaTime = newElapsedTime - wait.timeData.elapsedTime;
-                wait.timeData.elapsedTime = newElapsedTime;
-                var newElapsedUpdates = curFrame - wait.frameStarted;
-                wait.timeData.elapsedUpdates = newElapsedUpdates;
+                var newElapsedTime = _curTime - wait.TimeStarted;
+                wait.TimeData.DeltaTime = newElapsedTime - wait.TimeData.ElapsedTime;
+                wait.TimeData.ElapsedTime = newElapsedTime;
+                var newElapsedUpdates = _curFrame - wait.FrameStarted;
+                wait.TimeData.ElapsedUpdates = newElapsedUpdates;
 
                 bool result;
                 try
                 {
-                    result = wait.predicate(wait.timeData);
+                    result = wait.Predicate(wait.TimeData);
                 }
                 catch (Exception ex)
                 {
-                    wait.pendingPromise.Reject(ex);
+                    wait.PendingPromise.Reject(ex);
 
                     node = RemoveNode(node);
                     continue;
@@ -220,7 +220,7 @@ namespace RSG
 
                 if (result)
                 {
-                    wait.pendingPromise.Resolve();
+                    wait.PendingPromise.Resolve();
 
                     node = RemoveNode(node);
                 }
@@ -239,7 +239,7 @@ namespace RSG
             var currentNode = node;
             node = node.Next;
 
-            waiting.Remove(currentNode);
+            _waiting.Remove(currentNode);
 
             return node;
         }

@@ -1,9 +1,8 @@
-using RSG.Promises;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using RSG.Exceptions;
+using RSG.Promises;
 
 // ReSharper disable once CheckNamespace
 namespace RSG
@@ -51,7 +50,7 @@ namespace RSG
         /// <summary>
         /// Add a resolved callback that chains a value promise (optionally converting to a different value type).
         /// </summary>
-        IPromise<ConvertedT> Then<ConvertedT>(Func<IPromise<ConvertedT>> onResolved);
+        IPromise<TConvertedT> Then<TConvertedT>(Func<IPromise<TConvertedT>> onResolved);
 
         /// <summary>
         /// Add a resolved callback that chains a non-value promise.
@@ -67,7 +66,7 @@ namespace RSG
         /// Add a resolved callback and a rejected callback.
         /// The resolved callback chains a value promise (optionally converting to a different value type).
         /// </summary>
-        IPromise<ConvertedT> Then<ConvertedT>(Func<IPromise<ConvertedT>> onResolved, Func<Exception, IPromise<ConvertedT>> onRejected);
+        IPromise<TConvertedT> Then<TConvertedT>(Func<IPromise<TConvertedT>> onResolved, Func<Exception, IPromise<TConvertedT>> onRejected);
 
         /// <summary>
         /// Add a resolved callback and a rejected callback.
@@ -84,7 +83,7 @@ namespace RSG
         /// Add a resolved callback, a rejected callback and a progress callback.
         /// The resolved callback chains a value promise (optionally converting to a different value type).
         /// </summary>
-        IPromise<ConvertedT> Then<ConvertedT>(Func<IPromise<ConvertedT>> onResolved, Func<Exception, IPromise<ConvertedT>> onRejected, Action<float> onProgress);
+        IPromise<TConvertedT> Then<TConvertedT>(Func<IPromise<TConvertedT>> onResolved, Func<Exception, IPromise<TConvertedT>> onRejected, Action<float> onProgress);
 
         /// <summary>
         /// Add a resolved callback, a rejected callback and a progress callback.
@@ -110,7 +109,7 @@ namespace RSG
         /// The resulting promise is resolved when all of the promises have resolved.
         /// It is rejected as soon as any of the promises have been rejected.
         /// </summary>
-        IPromise<IEnumerable<ConvertedT>> ThenAll<ConvertedT>(Func<IEnumerable<IPromise<ConvertedT>>> chain);
+        IPromise<IEnumerable<TConvertedT>> ThenAll<TConvertedT>(Func<IEnumerable<IPromise<TConvertedT>>> chain);
 
         /// <summary>
         /// Chain a sequence of operations using promises.
@@ -131,7 +130,7 @@ namespace RSG
         /// Converts to a value promise.
         /// Returns a promise that resolves when the first of the promises has resolved.
         /// </summary>
-        IPromise<ConvertedT> ThenRace<ConvertedT>(Func<IEnumerable<IPromise<ConvertedT>>> chain);
+        IPromise<TConvertedT> ThenRace<TConvertedT>(Func<IEnumerable<IPromise<TConvertedT>>> chain);
 
         /// <summary> 
         /// Add a finally callback. 
@@ -152,7 +151,7 @@ namespace RSG
         /// ContinueWith callbacks will always be called, even if any preceding promise is rejected, or encounters an error.
         /// The state of the returning promise will be based on the new value promise, not the preceding (rejected or resolved) promise.
         /// </summary> 
-        IPromise<ConvertedT> ContinueWith<ConvertedT>(Func<IPromise<ConvertedT>> onComplete);
+        IPromise<TConvertedT> ContinueWith<TConvertedT>(Func<IPromise<TConvertedT>> onComplete);
 
         /// <summary>
         /// Add a progress callback.
@@ -227,7 +226,7 @@ namespace RSG
     {
         internal ExceptionEventArgs(Exception exception)
         {
-            this.Exception = exception;
+            Exception = exception;
         }
 
         public Exception Exception
@@ -245,12 +244,12 @@ namespace RSG
         /// <summary>
         /// Callback fn.
         /// </summary>
-        public Action<Exception> callback;
+        public Action<Exception> Callback;
 
         /// <summary>
         /// The promise that is rejected when there is an error while invoking the handler.
         /// </summary>
-        public IRejectable rejectable;
+        public IRejectable Rejectable;
     }
 
     public struct ProgressHandler
@@ -258,12 +257,12 @@ namespace RSG
         /// <summary>
         /// Callback fn.
         /// </summary>
-        public Action<float> callback;
+        public Action<float> Callback;
 
         /// <summary>
         /// The promise that is rejected when there is an error while invoking the handler.
         /// </summary>
-        public IRejectable rejectable;
+        public IRejectable Rejectable;
     }
 
     /// <summary>
@@ -283,15 +282,15 @@ namespace RSG
         /// </summary>
         public static event EventHandler<ExceptionEventArgs> UnhandledException
         {
-            add { unhandlerException += value; }
-            remove { unhandlerException -= value; }
+            add { _unhandlerException += value; }
+            remove { _unhandlerException -= value; }
         }
-        private static EventHandler<ExceptionEventArgs> unhandlerException;
+        private static EventHandler<ExceptionEventArgs> _unhandlerException;
 
         /// <summary>
         /// Id for the next promise that is created.
         /// </summary>
-        private static int nextPromiseId;
+        private static int _nextPromiseId;
 
         /// <summary>
         /// Information about pending promises.
@@ -320,12 +319,12 @@ namespace RSG
         /// <summary>
         /// The exception when the promise is rejected.
         /// </summary>
-        private Exception rejectionException;
+        private Exception _rejectionException;
 
         /// <summary>
         /// Error handlers.
         /// </summary>
-        private List<RejectHandler> rejectHandlers;
+        private List<RejectHandler> _rejectHandlers;
 
         /// <summary>
         /// Represents a handler invoked when the promise is resolved.
@@ -335,35 +334,35 @@ namespace RSG
             /// <summary>
             /// Callback fn.
             /// </summary>
-            public Action callback;
+            public Action Callback;
 
             /// <summary>
             /// The promise that is rejected when there is an error while invoking the handler.
             /// </summary>
-            public IRejectable rejectable;
+            public IRejectable Rejectable;
         }
 
         /// <summary>
         /// Completed handlers that accept no value.
         /// </summary>
-        private List<ResolveHandler> resolveHandlers;
+        private List<ResolveHandler> _resolveHandlers;
 
         /// <summary>
         /// Progress handlers.
         /// </summary>
-        private List<ProgressHandler> progressHandlers;
+        private List<ProgressHandler> _progressHandlers;
         
         /// <summary>
         /// Cancel handlers.
         /// </summary>
-        private List<ResolveHandler> cancelHandlers;
+        private List<ResolveHandler> _cancelHandlers;
 
         /// <summary>
         /// ID of the promise, useful for debugging.
         /// </summary>
-        public int Id { get { return id; } }
+        public int Id { get { return _id; } }
 
-        private readonly int id;
+        private readonly int _id;
 
         /// <summary>
         /// Name of the promise, when set, useful for debugging.
@@ -406,8 +405,8 @@ namespace RSG
         
         public Promise()
         {
-            this.CurState = PromiseState.Pending;
-            this.id = NextId();
+            CurState = PromiseState.Pending;
+            _id = NextId();
             if (EnablePromiseTracking)
             {
                 PendingPromises.Add(this);
@@ -416,8 +415,8 @@ namespace RSG
 
         public Promise(Action<Action, Action<Exception>> resolver)
         {
-            this.CurState = PromiseState.Pending;
-            this.id = NextId();
+            CurState = PromiseState.Pending;
+            _id = NextId();
             if (EnablePromiseTracking)
             {
                 PendingPromises.Add(this);
@@ -436,7 +435,7 @@ namespace RSG
         private Promise(PromiseState initialState)
         {
             CurState = initialState;
-            id = NextId();
+            _id = NextId();
         }
         
         public void AttachParent(ICancellablePromise parent)
@@ -467,7 +466,7 @@ namespace RSG
         /// </summary>
         internal static int NextId()
         {
-            return ++nextPromiseId;
+            return ++_nextPromiseId;
         }
 
         /// <summary>
@@ -475,15 +474,15 @@ namespace RSG
         /// </summary>
         private void AddRejectHandler(Action<Exception> onRejected, IRejectable rejectable)
         {
-            if (rejectHandlers == null)
+            if (_rejectHandlers == null)
             {
-                rejectHandlers = new List<RejectHandler>();
+                _rejectHandlers = new List<RejectHandler>();
             }
 
-            rejectHandlers.Add(new RejectHandler
+            _rejectHandlers.Add(new RejectHandler
             {
-                callback = onRejected,
-                rejectable = rejectable
+                Callback = onRejected,
+                Rejectable = rejectable
             });
         }
 
@@ -494,15 +493,15 @@ namespace RSG
         /// <param name="rejectable"></param>
         private void AddCancelHandler(Action onCanceled, IRejectable rejectable)
         {
-            if (cancelHandlers == null)
+            if (_cancelHandlers == null)
             {
-                cancelHandlers = new List<ResolveHandler>();
+                _cancelHandlers = new List<ResolveHandler>();
             }
 
-            cancelHandlers.Add(new ResolveHandler
+            _cancelHandlers.Add(new ResolveHandler
             {
-                callback = onCanceled,
-                rejectable = rejectable
+                Callback = onCanceled,
+                Rejectable = rejectable
             });
         }
 
@@ -511,15 +510,15 @@ namespace RSG
         /// </summary>
         private void AddResolveHandler(Action onResolved, IRejectable rejectable)
         {
-            if (resolveHandlers == null)
+            if (_resolveHandlers == null)
             {
-                resolveHandlers = new List<ResolveHandler>();
+                _resolveHandlers = new List<ResolveHandler>();
             }
 
-            resolveHandlers.Add(new ResolveHandler
+            _resolveHandlers.Add(new ResolveHandler
             {
-                callback = onResolved,
-                rejectable = rejectable
+                Callback = onResolved,
+                Rejectable = rejectable
             });
         }
 
@@ -528,12 +527,12 @@ namespace RSG
         /// </summary>
         private void AddProgressHandler(Action<float> onProgress, IRejectable rejectable)
         {
-            if (progressHandlers == null)
+            if (_progressHandlers == null)
             {
-                progressHandlers = new List<ProgressHandler>();
+                _progressHandlers = new List<ProgressHandler>();
             }
 
-            progressHandlers.Add(new ProgressHandler { callback = onProgress, rejectable = rejectable });
+            _progressHandlers.Add(new ProgressHandler { Callback = onProgress, Rejectable = rejectable });
         }
 
         /// <summary>
@@ -606,10 +605,10 @@ namespace RSG
         /// </summary>
         private void ClearHandlers()
         {
-            rejectHandlers = null;
-            resolveHandlers = null;
-            progressHandlers = null;
-            cancelHandlers = null;
+            _rejectHandlers = null;
+            _resolveHandlers = null;
+            _progressHandlers = null;
+            _cancelHandlers = null;
         }
 
         /// <summary>
@@ -617,10 +616,10 @@ namespace RSG
         /// </summary>
         private void InvokeRejectHandlers(Exception ex)
         {
-            if (rejectHandlers != null)
+            if (_rejectHandlers != null)
             {
-                for (int i = 0, maxI = rejectHandlers.Count; i < maxI; ++i)
-                    InvokeRejectHandler(rejectHandlers[i].callback, rejectHandlers[i].rejectable, ex);
+                for (int i = 0, maxI = _rejectHandlers.Count; i < maxI; ++i)
+                    InvokeRejectHandler(_rejectHandlers[i].Callback, _rejectHandlers[i].Rejectable, ex);
             }
 
             ClearHandlers();
@@ -631,10 +630,10 @@ namespace RSG
         /// </summary>
         private void InvokeResolveHandlers()
         {
-            if (resolveHandlers != null)
+            if (_resolveHandlers != null)
             {
-                for (int i = 0, maxI = resolveHandlers.Count; i < maxI; i++)
-                    InvokeResolveHandler(resolveHandlers[i].callback, resolveHandlers[i].rejectable);
+                for (int i = 0, maxI = _resolveHandlers.Count; i < maxI; i++)
+                    InvokeResolveHandler(_resolveHandlers[i].Callback, _resolveHandlers[i].Rejectable);
             }
 
             ClearHandlers();
@@ -646,7 +645,7 @@ namespace RSG
         /// </summary>
         private void InvokeCancelHandlers()
         {
-            cancelHandlers?.Each(handler => InvokeCancelHandler(handler.callback, handler.rejectable));
+            _cancelHandlers?.Each(handler => InvokeCancelHandler(handler.Callback, handler.Rejectable));
 
             ClearHandlers();
         }
@@ -656,10 +655,10 @@ namespace RSG
         /// </summary>
         private void InvokeProgressHandlers(float progress)
         {
-            if (progressHandlers != null)
+            if (_progressHandlers != null)
             {
-                for (int i = 0, maxI = progressHandlers.Count; i < maxI; i++)
-                    InvokeProgressHandler(progressHandlers[i].callback, progressHandlers[i].rejectable, progress);
+                for (int i = 0, maxI = _progressHandlers.Count; i < maxI; i++)
+                    InvokeProgressHandler(_progressHandlers[i].Callback, _progressHandlers[i].Rejectable, progress);
             }
         }
         
@@ -695,7 +694,7 @@ namespace RSG
                 return;
             }
 
-            rejectionException = ex;
+            _rejectionException = ex;
             CurState = PromiseState.Rejected;
 
             if (EnablePromiseTracking)
@@ -835,7 +834,7 @@ namespace RSG
         /// </summary>
         public IPromise WithName(string name)
         {
-            this.Name = name;
+            Name = name;
             return this;
         }
 
@@ -888,7 +887,7 @@ namespace RSG
         /// <summary>
         /// Add a resolved callback that chains a value promise (optionally converting to a different value type).
         /// </summary>
-        public IPromise<ConvertedT> Then<ConvertedT>(Func<IPromise<ConvertedT>> onResolved)
+        public IPromise<TConvertedT> Then<TConvertedT>(Func<IPromise<TConvertedT>> onResolved)
         {
             return Then(onResolved, null, null);
         }
@@ -913,7 +912,7 @@ namespace RSG
         /// Add a resolved callback and a rejected callback.
         /// The resolved callback chains a value promise (optionally converting to a different value type).
         /// </summary>
-        public IPromise<ConvertedT> Then<ConvertedT>(Func<IPromise<ConvertedT>> onResolved, Func<Exception, IPromise<ConvertedT>> onRejected)
+        public IPromise<TConvertedT> Then<TConvertedT>(Func<IPromise<TConvertedT>> onResolved, Func<Exception, IPromise<TConvertedT>> onRejected)
         {
             return Then(onResolved, onRejected, null);
         }
@@ -939,9 +938,9 @@ namespace RSG
         /// Add a resolved callback, a rejected callback and a progress callback.
         /// The resolved callback chains a value promise (optionally converting to a different value type).
         /// </summary>
-        public IPromise<ConvertedT> Then<ConvertedT>(
-            Func<IPromise<ConvertedT>> onResolved,
-            Func<Exception, IPromise<ConvertedT>> onRejected,
+        public IPromise<TConvertedT> Then<TConvertedT>(
+            Func<IPromise<TConvertedT>> onResolved,
+            Func<Exception, IPromise<TConvertedT>> onRejected,
             Action<float> onProgress)
         {
             if (CurState == PromiseState.Resolved)
@@ -952,14 +951,14 @@ namespace RSG
                 } 
                 catch (Exception ex)
                 {
-                    return Promise<ConvertedT>.Rejected(ex);
+                    return Promise<TConvertedT>.Rejected(ex);
                 }
             }
 
             // This version of the function must supply an onResolved.
             // Otherwise there is now way to get the converted value to pass to the resulting promise.
 
-            var resultPromise = new Promise<ConvertedT>();
+            var resultPromise = new Promise<TConvertedT>();
             resultPromise.WithName(Name);
             resultPromise.AttachParent(this);
 
@@ -1153,7 +1152,7 @@ namespace RSG
             }
             else if (CurState == PromiseState.Rejected)
             {
-                InvokeRejectHandler(rejectHandler, resultPromise, rejectionException);
+                InvokeRejectHandler(rejectHandler, resultPromise, _rejectionException);
             }
             else if (CurState == PromiseState.Cancelled)
             {
@@ -1194,9 +1193,9 @@ namespace RSG
         /// The resulting promise is resolved when all of the promises have resolved.
         /// It is rejected as soon as any of the promises have been rejected.
         /// </summary>
-        public IPromise<IEnumerable<ConvertedT>> ThenAll<ConvertedT>(Func<IEnumerable<IPromise<ConvertedT>>> chain)
+        public IPromise<IEnumerable<TConvertedT>> ThenAll<TConvertedT>(Func<IEnumerable<IPromise<TConvertedT>>> chain)
         {
-            return Then(() => Promise<ConvertedT>.All(chain()));
+            return Then(() => Promise<TConvertedT>.All(chain()));
         }
 
         /// <summary>
@@ -1316,7 +1315,7 @@ namespace RSG
                     ;
                 }
             )
-            .Then((Action)promise.Resolve)
+            .Then(promise.Resolve)
             .Catch(promise.Reject);
 
             promise.OnCancel(() => throw new NotSupportedException());
@@ -1338,9 +1337,9 @@ namespace RSG
         /// Converts to a value promise.
         /// Returns a promise that resolves when the first of the promises has resolved.
         /// </summary>
-        public IPromise<ConvertedT> ThenRace<ConvertedT>(Func<IEnumerable<IPromise<ConvertedT>>> chain)
+        public IPromise<TConvertedT> ThenRace<TConvertedT>(Func<IEnumerable<IPromise<TConvertedT>>> chain)
         {
-            return Then(() => Promise<ConvertedT>.Race(chain()));
+            return Then(() => Promise<TConvertedT>.Race(chain()));
         }
 
         /// <summary>
@@ -1405,10 +1404,10 @@ namespace RSG
         /// <summary>
         /// Convert a simple value directly into a resolved promise.
         /// </summary>
-        private static IPromise resolvedPromise = new Promise(PromiseState.Resolved);
+        private static IPromise _resolvedPromise = new Promise(PromiseState.Resolved);
         public static IPromise Resolved()
         {
-            return resolvedPromise;
+            return _resolvedPromise;
         }
 
         /// <summary>
@@ -1417,7 +1416,7 @@ namespace RSG
         public static IPromise Rejected(Exception ex)
         {
             var promise = new Promise(PromiseState.Rejected);
-            promise.rejectionException = ex;
+            promise._rejectionException = ex;
             return promise;
         }
         
@@ -1435,9 +1434,9 @@ namespace RSG
             promise.WithName(Name);
             promise.AttachParent(this);
 
-            this.Then(() => { promise.Resolve(); });
-            this.Catch((e) => { promise.Resolve(); });
-            this.OnCancel(() => promise.Resolve());
+            Then(() => { promise.Resolve(); });
+            Catch(e => { promise.Resolve(); });
+            OnCancel(() => promise.Resolve());
 
             promise.Then(onComplete);
         }
@@ -1448,20 +1447,20 @@ namespace RSG
             promise.WithName(Name);
             promise.AttachParent(this);
 
-            this.Then((Action)promise.Resolve);
-            this.Catch(e => promise.Resolve());
+            Then(promise.Resolve);
+            Catch(e => promise.Resolve());
 
             return promise.Then(onComplete);
         }
 
-        public IPromise<ConvertedT> ContinueWith<ConvertedT>(Func<IPromise<ConvertedT>> onComplete)
+        public IPromise<TConvertedT> ContinueWith<TConvertedT>(Func<IPromise<TConvertedT>> onComplete)
         {
             var promise = new Promise();
             promise.WithName(Name);
             promise.AttachParent(this);
 
-            this.Then((Action)promise.Resolve);
-            this.Catch(e => promise.Resolve());
+            Then(promise.Resolve);
+            Catch(e => promise.Resolve());
 
             return promise.Then(onComplete);
         }
@@ -1480,9 +1479,9 @@ namespace RSG
         /// </summary>
         internal static void PropagateUnhandledException(object sender, Exception ex)
         {
-            if (unhandlerException != null)
+            if (_unhandlerException != null)
             {
-                unhandlerException(sender, new ExceptionEventArgs(ex));
+                _unhandlerException(sender, new ExceptionEventArgs(ex));
             }
         }
     }

@@ -11,7 +11,7 @@ namespace RSG
     /// Implements a C# promise.
     /// https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise
     /// </summary>
-    public interface IPromise<TPromisedT> : ICancellablePromise
+    public interface IPromise<out TPromisedT> : ICancellablePromise
     {
         /// <summary>
         /// Gets the id of the promise, useful for referencing the promise during runtime.
@@ -43,15 +43,15 @@ namespace RSG
         void Done();
 
         /// <summary>
-        /// Handle errors for the promise. 
+        /// Handle errors for the promise. Resolves the promise afterwards.
         /// </summary>
-        IPromise Catch(Action<Exception> onRejected);
-
+        IPromise CatchAsResolved(Action<Exception> onRejected);
+        
         /// <summary>
-        /// Handle errors for the promise. 
+        /// Handle errors for the promise. Rejects the promise after the Catch.
         /// </summary>
-        IPromise<TPromisedT> Catch(Func<Exception, TPromisedT> onRejected);
-
+        IPromise<TPromisedT> Catch(Action<Exception> onRejected);
+        
         /// <summary>
         /// Add a resolved callback that chains a value promise (optionally converting to a different value type).
         /// </summary>
@@ -65,7 +65,12 @@ namespace RSG
         /// <summary>
         /// Add a resolved callback.
         /// </summary>
-        IPromise Then(Action<TPromisedT> onResolved);
+        IPromise ThenAsNonGeneric(Action<TPromisedT> onResolved);
+        
+        /// <summary>
+        /// Add a resolved callback.
+        /// </summary>
+        IPromise<TPromisedT> Then(Action<TPromisedT> onResolved);
 
         /// <summary>
         /// Add a resolved callback and a rejected callback.
@@ -158,6 +163,13 @@ namespace RSG
         /// The state of the returning promise will be based on the new non-value promise, not the preceding (rejected or resolved) promise.
         /// </summary>
         IPromise ContinueWith(Func<IPromise> onResolved);
+        
+        /// <summary>
+        /// Add a callback that chains a non-value promise.
+        /// ContinueWith callbacks will always be called, even if any preceding promise is rejected, or encounters an error.
+        /// The state of the returning promise will be based on the new non-value promise, not the preceding (rejected or resolved) promise.
+        /// </summary>
+        IPromise ContinueWithResolved(Action onResolved);
 
         /// <summary> 
         /// Add a callback that chains a value promise (optionally converting to a different value type).
@@ -685,7 +697,7 @@ namespace RSG
         public void Done(Action<TPromisedT> onResolved, Action<Exception> onRejected)
         {
             Then(onResolved, onRejected)
-                .Catch(ex =>
+                .CatchAsResolved(ex =>
                     Promise.PropagateUnhandledException(this, ex)
                 );
         }
@@ -697,8 +709,8 @@ namespace RSG
         /// </summary>
         public void Done(Action<TPromisedT> onResolved)
         {
-            Then(onResolved)
-                .Catch(ex =>
+            ThenAsNonGeneric(onResolved)
+                .CatchAsResolved(ex =>
                     Promise.PropagateUnhandledException(this, ex)
                 );
         }
@@ -711,7 +723,7 @@ namespace RSG
             if (CurState == PromiseState.Resolved)
                 return;
 
-            Catch(ex =>
+            CatchAsResolved(ex =>
                 Promise.PropagateUnhandledException(this, ex)
             );
         }
@@ -726,9 +738,9 @@ namespace RSG
         }
 
         /// <summary>
-        /// Handle errors for the promise. 
+        /// Handle errors for the promise. Resolves the promise afterwards.
         /// </summary>
-        public IPromise Catch(Action<Exception> onRejected)
+        public IPromise CatchAsResolved(Action<Exception> onRejected)
         {
             if (CurState == PromiseState.Resolved)
             {
@@ -761,11 +773,11 @@ namespace RSG
 
             return resultPromise;
         }
-
+        
         /// <summary>
-        /// Handle errors for the promise.
+        /// Handle errors for the promise. Rejects the promise after the Catch.
         /// </summary>
-        public IPromise<TPromisedT> Catch(Func<Exception, TPromisedT> onRejected)
+        public IPromise<TPromisedT> Catch(Action<Exception> onRejected)
         {
             if (CurState == PromiseState.Resolved)
             {
@@ -782,9 +794,10 @@ namespace RSG
             {
                 try
                 {
-                    resultPromise.Resolve(onRejected(ex));
+                    onRejected(ex);
+                    resultPromise.RejectSilent(ex);
                 }
-                catch (Exception cbEx)
+                catch(Exception cbEx)
                 {
                     resultPromise.RejectSilent(cbEx);
                 }
@@ -826,11 +839,11 @@ namespace RSG
         /// <summary>
         /// Add a resolved callback.
         /// </summary>
-        public IPromise Then(Action<TPromisedT> onResolved)
+        public IPromise ThenAsNonGeneric(Action<TPromisedT> onResolved)
         {
             return Then(onResolved, null, null);
         }
-
+        
         /// <summary>
         /// Add a resolved callback and a rejected callback.
         /// The resolved callback chains a value promise (optionally converting to a different value type).
@@ -860,6 +873,17 @@ namespace RSG
             return Then(onResolved, onRejected, null);
         }
 
+        /// <summary>
+        /// Add a resolved callback.
+        /// </summary>
+        public IPromise<TPromisedT> Then(Action<TPromisedT> onResolved)
+        {
+            return Then(v=>
+            {
+                onResolved(v);
+                return Resolved(v);
+            }, null, null);
+        }
 
         /// <summary>
         /// Add a resolved callback, a rejected callback and a progress callback.
@@ -1239,7 +1263,7 @@ namespace RSG
                             resultPromise.Resolve(results);
                         }
                     })
-                    .Catch(ex =>
+                    .CatchAsResolved(ex =>
                     {
                         if (resultPromise.CurState == PromiseState.Pending)
                         {
@@ -1324,7 +1348,7 @@ namespace RSG
                             resultPromise.Resolve(result);
                         }
                     })
-                    .Catch(ex =>
+                    .CatchAsResolved(ex =>
                     {
                         if (resultPromise.CurState == PromiseState.Pending)
                         {
@@ -1372,7 +1396,7 @@ namespace RSG
             promise.WithName(Name);
             promise.AttachParent(this);
 
-            Then(x => { promise.Resolve(); });
+            ThenAsNonGeneric(x => { promise.Resolve(); });
             Catch(e => { promise.Resolve(); });
             OnCancel(() => promise.Resolve());
 
@@ -1385,10 +1409,34 @@ namespace RSG
             promise.WithName(Name);
             promise.AttachParent(this);
 
-            Then(x => promise.Resolve());
+            ThenAsNonGeneric(x => promise.Resolve());
             Catch(e => promise.Resolve());
 
             return promise.Then(onComplete);
+        }
+
+        public IPromise ContinueWithResolved(Action onResolved)
+        {
+            var promise = new Promise();
+            promise.WithName(Name);
+            promise.AttachParent(this);
+
+            ThenAsNonGeneric(x => promise.Resolve());
+            Catch(e => promise.Resolve());
+
+            return promise.Then(() =>
+            {
+                try
+                {
+                    onResolved();
+                }
+                catch (Exception e)
+                {
+                    return Promise.Rejected(e);
+                }
+                
+                return Promise.Resolved();
+            });
         }
 
         public IPromise<TConvertedT> ContinueWith<TConvertedT>(Func<IPromise<TConvertedT>> onComplete)
@@ -1397,7 +1445,7 @@ namespace RSG
             promise.WithName(Name);
             promise.AttachParent(this);
 
-            Then(x => promise.Resolve());
+            ThenAsNonGeneric(x => promise.Resolve());
             Catch(e => promise.Resolve());
 
             return promise.Then(onComplete);

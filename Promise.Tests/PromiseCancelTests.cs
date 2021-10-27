@@ -31,6 +31,32 @@ namespace RSG.Tests
         }
         
         [Fact]
+        public void can_cancel_simple_promise_value_chain()
+        {
+            var promise = new Promise<int>();
+
+            var completed = 0;
+            promise.Then(v =>
+            {
+                ++completed;
+                Assert.Equal(0, completed);
+            }).Then(v =>
+            {
+                Assert.Equal(0, completed);
+            });
+            
+            promise.Cancel();
+            
+            Assert.Equal(false, promise.CanBeResolved);
+            Assert.Equal(false, promise.CanBeCanceled);
+
+            foreach (var state in promise.GetAllTreeStates())
+            {
+                Assert.Equal(PromiseState.Cancelled, state);
+            }
+        }
+        
+        [Fact]
         public void can_cancel_simple_value_promise()
         {
             var promise = new Promise<int>();

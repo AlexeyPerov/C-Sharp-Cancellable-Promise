@@ -24,7 +24,7 @@ namespace RSG
                         promise.Resolve(Tuple.Create(val1, val2));
                     }
                 })
-                .Catch(e =>
+                .CatchAsResolved(e =>
                 {
                     if (!alreadyRejected)
                     {
@@ -45,7 +45,7 @@ namespace RSG
                         promise.Resolve(Tuple.Create(val1, val2));
                     }
                 })
-                .Catch(e =>
+                .CatchAsResolved(e =>
                 {
                     if (!alreadyRejected)
                     {

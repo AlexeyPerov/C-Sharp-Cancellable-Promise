@@ -392,6 +392,7 @@ namespace RSG.Tests
                 promise2.Reject(new Exception("Error!"));
 
                 Assert.Equal(1, errors);
+                Assert.Equal(PromiseState.Rejected, all.CurState);
             });
         }
 
@@ -907,7 +908,7 @@ namespace RSG.Tests
             {
                 promise
                     .Then(() => throw ex)
-                    .Catch(_ =>
+                    .CatchAsResolved(_ =>
                     {
                         // Catch the error.
                     })

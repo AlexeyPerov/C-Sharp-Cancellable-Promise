@@ -604,10 +604,10 @@ namespace RSG.Tests
 
                 var errors = 0;
                 all.Catch(e => { ++errors; });
-
+                
                 promise1.Reject(new Exception("Error!"));
                 promise2.Reject(new Exception("Error!"));
-
+                
                 Assert.Equal(1, errors);
             });
         }
@@ -1092,7 +1092,7 @@ namespace RSG.Tests
             {
                 promise
                     .Then(a => throw ex)
-                    .Catch(_ => 
+                    .CatchAsResolved(_ => 
                     {
                         // Catch the error.
                     })

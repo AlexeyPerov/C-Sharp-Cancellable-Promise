@@ -43,9 +43,14 @@ namespace RSG
         void Done();
 
         /// <summary>
-        /// Handle errors for the promise. 
+        /// Handle errors for the promise. Rejects the promise after the Catch.
         /// </summary>
         IPromise Catch(Action<Exception> onRejected);
+
+        /// <summary>
+        /// Handle errors for the promise. Resolves the promise afterwards.
+        /// </summary>
+        IPromise CatchAsResolved(Action<Exception> onRejected);
 
         /// <summary>
         /// Add a resolved callback that chains a value promise (optionally converting to a different value type).
@@ -145,6 +150,13 @@ namespace RSG
         /// The state of the returning promise will be based on the new non-value promise, not the preceding (rejected or resolved) promise.
         /// </summary>
         IPromise ContinueWith(Func<IPromise> onResolved);
+
+        /// <summary>
+        /// Add a callback that chains a non-value promise.
+        /// ContinueWith callbacks will always be called, even if any preceding promise is rejected, or encounters an error.
+        /// The state of the returning promise will be based on the new non-value promise, not the preceding (rejected or resolved) promise.
+        /// </summary>
+        IPromise ContinueWithResolved(Action onResolved);
 
         /// <summary> 
         /// Add a callback that chains a value promise (optionally converting to a different value type).
@@ -374,6 +386,11 @@ namespace RSG
         /// </summary>
         public PromiseState CurState { get; private set; }
 
+        /// <summary>
+        /// Promise state shortcut.
+        /// </summary>
+        public bool IsPending => CurState == PromiseState.Pending;
+        
         /// <summary>
         /// Promise state shortcut.
         /// </summary>
@@ -800,7 +817,7 @@ namespace RSG
         public void Done(Action onResolved, Action<Exception> onRejected)
         {
             Then(onResolved, onRejected)
-                .Catch(ex =>
+                .CatchAsResolved(ex =>
                     PropagateUnhandledException(this, ex)
                 );
         }
@@ -813,7 +830,7 @@ namespace RSG
         public void Done(Action onResolved)
         {
             Then(onResolved)
-                .Catch(ex => 
+                .CatchAsResolved(ex => 
                     PropagateUnhandledException(this, ex)
                 );
         }
@@ -826,7 +843,7 @@ namespace RSG
             if (CurState == PromiseState.Resolved)
                 return;
 
-            Catch(ex => PropagateUnhandledException(this, ex));
+            CatchAsResolved(ex => PropagateUnhandledException(this, ex));
         }
 
         /// <summary>
@@ -837,9 +854,46 @@ namespace RSG
             Name = name;
             return this;
         }
-
+        
         /// <summary>
-        /// Handle errors for the promise. 
+        /// Handle errors for the promise. Resolves the promise afterwards.
+        /// </summary>
+        public IPromise CatchAsResolved(Action<Exception> onRejected)
+        {
+            if (CurState == PromiseState.Resolved)
+            {
+                return this;
+            }
+
+            var resultPromise = new Promise();
+            resultPromise.WithName(Name);
+            resultPromise.AttachParent(this);
+
+            Action resolveHandler = () => resultPromise.Resolve();
+
+            Action<Exception> rejectHandler = ex =>
+            {
+                try
+                {
+                    onRejected(ex);
+                    resultPromise.Resolve();
+                }
+                catch (Exception callbackException)
+                {
+                    resultPromise.Reject(callbackException);
+                }
+            };
+
+            Action cancelHandler = () => resultPromise.Cancel();
+
+            ActionHandlers(resultPromise, resolveHandler, rejectHandler, cancelHandler);
+            ProgressHandlers(resultPromise, v => resultPromise.ReportProgress(v));
+
+            return resultPromise;
+        }
+        
+        /// <summary>
+        /// Handle errors for the promise. Rejects the promise after the Catch.
         /// </summary>
         public IPromise Catch(Action<Exception> onRejected)
         {
@@ -859,7 +913,7 @@ namespace RSG
                 try
                 {
                     onRejected(ex);
-                    resultPromise.Resolve();
+                    resultPromise.RejectSilent(ex);
                 }
                 catch (Exception callbackException)
                 {
@@ -1249,7 +1303,7 @@ namespace RSG
                             resultPromise.Resolve();
                         }
                     })
-                    .Catch(ex =>
+                    .CatchAsResolved(ex =>
                     {
                         if (resultPromise.CurState == PromiseState.Pending)
                         {
@@ -1380,7 +1434,7 @@ namespace RSG
                         progress[index] = v;
                         resultPromise.ReportProgress(progress.Max());
                     })
-                    .Catch(ex =>
+                    .CatchAsResolved(ex =>
                     {
                         if (resultPromise.CurState == PromiseState.Pending)
                         {
@@ -1451,6 +1505,30 @@ namespace RSG
             Catch(e => promise.Resolve());
 
             return promise.Then(onComplete);
+        }
+
+        public IPromise ContinueWithResolved(Action onResolved)
+        {
+            var promise = new Promise();
+            promise.WithName(Name);
+            promise.AttachParent(this);
+
+            Then(promise.Resolve);
+            Catch(e => promise.Resolve());
+
+            return promise.Then(() =>
+            {
+                try
+                {
+                    onResolved();
+                }
+                catch (Exception e)
+                {
+                    return Rejected(e);
+                }
+                
+                return Resolved();
+            });
         }
 
         public IPromise<TConvertedT> ContinueWith<TConvertedT>(Func<IPromise<TConvertedT>> onComplete)

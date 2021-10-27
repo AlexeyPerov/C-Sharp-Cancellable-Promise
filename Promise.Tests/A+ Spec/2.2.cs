@@ -341,6 +341,7 @@ namespace RSG.Tests.A__Spec
                     Assert.Equal(1, promise2ThenHandler);
                 }
 
+                /* Support to Catch with value dropped
                 [Fact]
                 public void _when_promise1_is_rejected_with_no_value_in_catch()
                 {
@@ -352,6 +353,7 @@ namespace RSG.Tests.A__Spec
 
                     Assert.True(callbackInvoked);
                 }
+                */
 
                 [Fact]
                 public void _when_promise1_is_rejected_with_no_value_in_then()
@@ -372,6 +374,7 @@ namespace RSG.Tests.A__Spec
                     Assert.True(rejectHandlerInvoked);
                 }
 
+                /* Support to Catch with value dropped
                 [Fact]
                 public void _when_promise1_is_rejected_with_value_in_catch()
                 {
@@ -383,7 +386,7 @@ namespace RSG.Tests.A__Spec
                         .Then(val => actualValue = val);
 
                     Assert.Equal(expectedValue, actualValue);
-                }
+                }*/
 
                 [Fact]
                 public void _when_promise1_is_rejected_with_value_in_then()
@@ -407,7 +410,7 @@ namespace RSG.Tests.A__Spec
                     var callbackInvoked = false;
 
                     new Promise((res, rej) => rej(new Exception()))
-                        .Catch(_ => {})
+                        .CatchAsResolved(_ => {})
                         .Then(() => callbackInvoked = true);
 
                     Assert.True(callbackInvoked);

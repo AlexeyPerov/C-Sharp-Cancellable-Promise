@@ -1280,8 +1280,8 @@ namespace RSG
 
             promisesArray.Each((promise, index) =>
             {
-                promise.AttachParent(resultPromise);
                 resultPromise.OnCancel(promise.Cancel);
+                promise.OnCancel(resultPromise.Cancel);
                 
                 promise
                     .Progress(v =>

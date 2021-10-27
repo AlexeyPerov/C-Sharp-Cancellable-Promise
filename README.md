@@ -56,11 +56,12 @@ There you can get familiar with the Promise concept in more details.
 
 ## Breaking changes
 
+- Finally() method changed to not return anything.
+
 ```cs
 public void Finally(Action onComplete);
 ```
 
-Finally() method changed to not return anything.
 So you won't be able to call something like:
 
  ```cs
@@ -77,6 +78,11 @@ var promise = new Promise();
 promise.Then(...).Then(...).CancelWith(provider);
 promive.Finally(...);
 ```
+
+- Catch() rejects promise but there is CatchAsResolved() for backward compatibility.
+- Generic promise now has a covariant modifier
+- Dropped support of Catch(Func<Exception, TPromised>) tu support covariant modifier
+- Code style fixed to be more .NET-style
 
 ## Cancellation utilities
 

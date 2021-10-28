@@ -62,7 +62,7 @@ which seems to be pretty ambigious.
 
 - Catch() rejects promise but there is CatchAsResolved() for backward compatibility.
 - Generic promise now has a covariant modifier
-- Dropped support of Catch(Func<Exception, TPromised>) tu support covariant modifier
+- Dropped support of Catch(Func<Exception, TPromised>) to support covariant modifier
 - Code style fixed to be more .NET-style
 
 ## Cancellation utilities

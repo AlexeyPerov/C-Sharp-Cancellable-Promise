@@ -563,7 +563,7 @@ namespace RSG
             }
             catch (Exception ex)
             {
-                EventsReceiver.OnException(ex);
+                EventsReceiver.OnHandlerException(ex);
                 rejectable.RejectSilent(ex);
             }
         }
@@ -579,7 +579,7 @@ namespace RSG
             }
             catch (Exception ex)
             {
-                EventsReceiver.OnException(ex);
+                EventsReceiver.OnHandlerException(ex);
                 rejectable.RejectSilent(ex);
             }
         }
@@ -597,7 +597,7 @@ namespace RSG
             }
             catch (Exception ex)
             {
-                EventsReceiver.OnException(ex);
+                EventsReceiver.OnHandlerException(ex);
                 rejectable.RejectSilent(ex);
             }
         }
@@ -613,7 +613,8 @@ namespace RSG
             }
             catch (Exception ex)
             {
-                rejectable.Reject(ex);
+                EventsReceiver.OnHandlerException(ex);
+                rejectable.RejectSilent(ex);
             }
         }
 
@@ -684,16 +685,18 @@ namespace RSG
         /// </summary>
         public void Reject(Exception ex)
         {
-            if (ex != null)
+            if (CurState != PromiseState.Pending)
             {
-                EventsReceiver.OnException(ex);
+                var message =
+                    "Attempt to reject a promise that is already in state: " 
+                    + CurState + ", a promise can only be rejected when it is still in state: " + PromiseState.Pending;
+                EventsReceiver.OnStateException(new PromiseStateException(message));
+                return;
             }
-            else
-            {
-                EventsReceiver.OnWarningMinor("Rejecting promise with null exception");
-            }
-
-            RejectSilent(ex);
+            
+            var rejectException = ex ?? new Exception("Promise rejected");
+            EventsReceiver.OnRejectException(rejectException);
+            RejectInternal(rejectException);
         }
 
         /// <summary>
@@ -703,14 +706,20 @@ namespace RSG
         {
             if (CurState != PromiseState.Pending)
             {
-                EventsReceiver.OnStateException(new PromiseStateException(
-                    "Attempt to reject a promise that is already in state: " + CurState 
-                    + ", a promise can only be rejected when it is still in state: " 
-                    + PromiseState.Pending
-                ));
+                var message =
+                    "Attempt to reject a promise that is already in state: " 
+                    + CurState + ", a promise can only be rejected when it is still in state: " + PromiseState.Pending;
+                EventsReceiver.OnStateException(new PromiseStateException(message));
                 return;
             }
+            
+            var rejectException = ex ?? new Exception("Promise rejected");
+            EventsReceiver.OnRejectSilentException(rejectException);
+            RejectInternal(rejectException);
+        }
 
+        private void RejectInternal(Exception ex)
+        {
             _rejectionException = ex;
             CurState = PromiseState.Rejected;
 
@@ -880,7 +889,8 @@ namespace RSG
                 }
                 catch (Exception callbackException)
                 {
-                    resultPromise.Reject(callbackException);
+                    EventsReceiver.OnHandlerException(callbackException);
+                    resultPromise.RejectSilent(callbackException);
                 }
             };
 
@@ -917,7 +927,8 @@ namespace RSG
                 }
                 catch (Exception callbackException)
                 {
-                    resultPromise.Reject(callbackException);
+                    EventsReceiver.OnHandlerException(callbackException);
+                    resultPromise.RejectSilent(callbackException);
                 }
             };
 
@@ -1032,7 +1043,7 @@ namespace RSG
             {
                 if (onRejected == null)
                 {
-                    resultPromise.Reject(ex);
+                    resultPromise.RejectSilent(ex);
                     return;
                 }
 
@@ -1046,7 +1057,8 @@ namespace RSG
                 }
                 catch (Exception callbackEx)
                 {
-                    resultPromise.Reject(callbackEx);
+                    EventsReceiver.OnHandlerException(callbackEx);
+                    resultPromise.RejectSilent(callbackEx);
                 }
             };
             
@@ -1092,7 +1104,7 @@ namespace RSG
                         .Progress(progress => resultPromise.ReportProgress(progress))
                         .Then(
                             () => resultPromise.Resolve(),
-                            ex => resultPromise.Reject(ex)
+                            ex => resultPromise.RejectSilent(ex)
                         )
                         .OnCancel(() => resultPromise.Cancel());
                 };
@@ -1108,12 +1120,12 @@ namespace RSG
                 rejectHandler = ex =>
                 {
                     onRejected(ex);
-                    resultPromise.Reject(ex);
+                    resultPromise.RejectSilent(ex);
                 };
             }
             else
             {
-                rejectHandler = resultPromise.Reject;
+                rejectHandler = resultPromise.RejectSilent;
             }
             
             Action cancelHandler = () => resultPromise.Cancel();
@@ -1175,12 +1187,12 @@ namespace RSG
                         return;
                     }
 
-                    resultPromise.Reject(ex);
+                    resultPromise.RejectSilent(ex);
                 };
             }
             else
             {
-                rejectHandler = resultPromise.Reject;
+                rejectHandler = resultPromise.RejectSilent;
             }
             
             Action cancelHandler = () => resultPromise.Cancel();
@@ -1415,7 +1427,7 @@ namespace RSG
             if (promisesArray.Length == 0)
             {
                 var ex = new InvalidOperationException("At least 1 input promise must be provided for Race");
-                EventsReceiver.OnException(ex);
+                EventsReceiver.OnInternalException(ex);
                 return Rejected(ex);
             }
 
@@ -1438,7 +1450,7 @@ namespace RSG
                     {
                         if (resultPromise.CurState == PromiseState.Pending)
                         {
-                            // If a promise errorred and the result promise is still pending, reject it.
+                            // If a promise errored and the result promise is still pending, reject it.
                             resultPromise.Reject(ex);
                         }
                     })

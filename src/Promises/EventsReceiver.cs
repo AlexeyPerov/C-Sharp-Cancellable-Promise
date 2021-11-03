@@ -33,9 +33,24 @@ namespace RSG
             Receiver?.OnStateException(exception);
         }
 
-        public static void OnException(Exception exception)
+        public static void OnInternalException(Exception exception)
         {
-            Receiver?.OnException(exception);
+            Receiver?.OnInternalException(exception);
+        }
+        
+        public static void OnRejectException(Exception exception)
+        {
+            Receiver?.OnRejectException(exception);
+        }
+        
+        public static void OnRejectSilentException(Exception exception)
+        {
+            Receiver?.OnRejectSilentException(exception);
+        }
+        
+        public static void OnHandlerException(Exception exception)
+        {
+            Receiver?.OnHandlerException(exception);
         }
     }
 
@@ -45,7 +60,10 @@ namespace RSG
         void OnWarningMinor(string message);
         void OnWarning(string message);
         void OnStateException(PromiseStateException exception);
-        void OnException(Exception exception);
+        void OnInternalException(Exception exception);
+        void OnRejectException(Exception exception);
+        void OnRejectSilentException(Exception exception);
+        void OnHandlerException(Exception exception);
     }
 
     public class DefaultEventsReceiver : IEventsReceiver
@@ -70,9 +88,24 @@ namespace RSG
             throw exception;
         }
 
-        public void OnException(Exception exception)
+        public void OnInternalException(Exception exception)
         {
             Console.WriteLine(exception);
+        }
+
+        public void OnRejectException(Exception exception)
+        {
+            
+        }
+
+        public void OnRejectSilentException(Exception exception)
+        {
+            
+        }
+
+        public void OnHandlerException(Exception exception)
+        {
+            
         }
     }
 }

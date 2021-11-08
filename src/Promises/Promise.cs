@@ -915,6 +915,7 @@ namespace RSG
                 }
                 catch (Exception ex)
                 {
+                    EventsReceiver.OnHandlerException(ex);
                     return Promise<TConvertedT>.Rejected(ex);
                 }
             }
@@ -986,6 +987,7 @@ namespace RSG
                 }
                 catch (Exception ex)
                 {
+                    EventsReceiver.OnHandlerException(ex);
                     return Promise.Rejected(ex);
                 }
             }
@@ -1051,6 +1053,7 @@ namespace RSG
                 }
                 catch (Exception ex)
                 {
+                    EventsReceiver.OnHandlerException(ex);
                     return Promise.Rejected(ex);
                 }
             }
@@ -1445,6 +1448,7 @@ namespace RSG
                 }
                 catch (Exception e)
                 {
+                    EventsReceiver.OnHandlerException(e);
                     return Promise.Rejected(e);
                 }
                 

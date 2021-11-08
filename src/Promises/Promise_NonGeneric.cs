@@ -1016,6 +1016,7 @@ namespace RSG
                 } 
                 catch (Exception ex)
                 {
+                    EventsReceiver.OnHandlerException(ex);
                     return Promise<TConvertedT>.Rejected(ex);
                 }
             }
@@ -1087,6 +1088,7 @@ namespace RSG
                 }
                 catch (Exception ex)
                 {
+                    EventsReceiver.OnHandlerException(ex);
                     return Rejected(ex);
                 }
             }
@@ -1153,6 +1155,7 @@ namespace RSG
                 }
                 catch (Exception ex)
                 {
+                    EventsReceiver.OnHandlerException(ex);
                     return Rejected(ex);
                 }
             }
@@ -1470,10 +1473,11 @@ namespace RSG
         /// <summary>
         /// Convert a simple value directly into a resolved promise.
         /// </summary>
-        private static IPromise _resolvedPromise = new Promise(PromiseState.Resolved);
+        private static readonly IPromise ResolvedPromise = new Promise(PromiseState.Resolved);
+        
         public static IPromise Resolved()
         {
-            return _resolvedPromise;
+            return ResolvedPromise;
         }
 
         /// <summary>
@@ -1536,6 +1540,7 @@ namespace RSG
                 }
                 catch (Exception e)
                 {
+                    EventsReceiver.OnHandlerException(e);
                     return Rejected(e);
                 }
                 

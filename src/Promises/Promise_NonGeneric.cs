@@ -1368,7 +1368,7 @@ namespace RSG
                 {
                     int itemSequence = count;
                     ++count;
-
+                    
                     return prevPromise
                             .Then(() =>
                             {
@@ -1380,15 +1380,12 @@ namespace RSG
                             {
                                 var sliceLength = 1f / count;
                                 promise.ReportProgress(sliceLength * (v + itemSequence));
-                            })
-                    ;
+                            });
                 }
             )
             .Then(promise.Resolve)
             .Catch(promise.Reject);
 
-            promise.OnCancel(() => throw new NotSupportedException());
-            
             return promise;
         }
 

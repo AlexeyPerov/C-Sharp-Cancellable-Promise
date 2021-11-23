@@ -1198,8 +1198,6 @@ namespace RSG
                 promise.ReportProgress(1f);
                 promise.Reject(ex);
             });
-
-            promise.OnCancel(() => throw new NotSupportedException());
             
             return promise;
         }

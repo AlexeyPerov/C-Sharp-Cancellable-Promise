@@ -609,7 +609,7 @@ namespace RSG.Tests
         }
         
         [Fact]
-        public void cant_cancel_promise_first()
+        public void can_cancel_result_promise_first()
         {
             var promise1 = new Promise<int>();
             var promise2 = new Promise<int>();
@@ -630,12 +630,12 @@ namespace RSG.Tests
                 exception = e;
             }
             
-            Assert.NotNull(exception);
-            Assert.Equal(typeof(PromiseStateException), exception.GetType());
+            Assert.Null(exception);
+            Assert.Equal(first.CurState, PromiseState.Cancelled);
         }
         
         [Fact]
-        public void cant_cancel_promise_sequence()
+        public void can_cancel_result_promise_sequence()
         {
             var promise1 = new Promise();
             var promise2 = new Promise();
@@ -643,21 +643,21 @@ namespace RSG.Tests
             promise1.Then(() => { });
             promise2.Then(() => { });
 
-            var first = Promise.Sequence(() => promise1, () => promise2);
+            var sequence = Promise.Sequence(() => promise1, () => promise2);
 
             Exception exception = null;
 
             try
             {
-                first.Cancel();
+                sequence.Cancel();
             }
             catch (Exception e)
             {
                 exception = e;
             }
             
-            Assert.NotNull(exception);
-            Assert.Equal(typeof(PromiseStateException), exception.GetType());
+            Assert.Null(exception);
+            Assert.Equal(sequence.CurState, PromiseState.Cancelled);
         }
     }
 }
